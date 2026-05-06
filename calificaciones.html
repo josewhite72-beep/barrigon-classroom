@@ -249,7 +249,7 @@
     </div>
     <div class="nota-hint" id="notaHint" style="display:none">
       <span>💡</span>
-      <div>Edita la nota y presiona <b>Guardar</b>. Escala: 0–100</div>
+      <div>Edita la nota y presiona <b>Guardar</b>. Escala: 1.0–5.0</div>
     </div>
   </div>
 
@@ -319,10 +319,11 @@
   function scoreGrade(n) {
     if (n === null || n === undefined || n === '') return null;
     n = Number(n);
-    if (n >= 91) return 'A';
-    if (n >= 71) return 'B';
-    if (n >= 51) return 'C';
-    return 'D';
+    if (n >= 4.1) return 'A';
+    if (n >= 3.1) return 'B';
+    if (n >= 2.1) return 'C';
+    if (n >= 1.0) return 'D';
+    return null;
   }
 
   // ===== INIT =====
@@ -463,12 +464,12 @@
 
     // Promedio
     const scores = MATERIAS.map(m => map[m]?.score).filter(s => s !== undefined && s !== null && s !== '');
-    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+Number(b),0)/scores.length) : null;
+    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+Number(b),0)/scores.length * 10) / 10 : null;
     const grade = scoreGrade(avg);
 
     const avgCard = document.getElementById('avgCard');
     avgCard.style.display = 'flex';
-    document.getElementById('avgNum').textContent = avg !== null ? avg : '—';
+    document.getElementById('avgNum').textContent = avg !== null ? avg.toFixed(1) : '—';
     document.getElementById('avgName').textContent = currentStudentName;
     document.getElementById('avgGrade').textContent =
       (GRADE_LABELS[currentGrade]||currentGrade||'') + ' · ' + currentPeriodo + ' Trimestre';
@@ -490,7 +491,7 @@
         return `
         <div class="subject-row ${gradeClass}" id="row-${slugify(materia)}">
           <div class="subj-name">${escHtml(materia)}</div>
-          <input class="subj-input" type="number" min="0" max="100"
+          <input class="subj-input" type="number" min="1" max="5" step="0.1"
             id="inp-${slugify(materia)}"
             value="${score !== undefined && score !== null ? score : ''}"
             placeholder="—"
@@ -518,9 +519,9 @@
     const row   = document.getElementById('row-'+slug);
     let val = input.value.trim();
 
-    // Clamp 0-100
-    if (val !== '' && Number(val) > 100) { input.value = 100; val = '100'; }
-    if (val !== '' && Number(val) < 0)   { input.value = 0;   val = '0'; }
+    // Clamp 1.0-5.0
+    if (val !== '' && Number(val) > 5.0) { input.value = 5.0; val = '5.0'; }
+    if (val !== '' && Number(val) < 1.0) { input.value = 1.0; val = '1.0'; }
 
     const g = scoreGrade(val === '' ? null : val);
     row.className = 'subject-row' + (g ? ' grade-'+g : '');
@@ -534,9 +535,9 @@
     const btn   = document.getElementById('btn-'+slug);
     const val   = input.value.trim();
 
-    if (val === '') { showToast('Escribe una nota entre 0 y 100.','error'); return; }
+    if (val === '') { showToast('Escribe una nota entre 1.0 y 5.0.','error'); return; }
     const num = Number(val);
-    if (isNaN(num) || num < 0 || num > 100) { showToast('Nota inválida (0–100).','error'); return; }
+    if (isNaN(num) || num < 1.0 || num > 5.0) { showToast('Nota inválida (1.0–5.0).','error'); return; }
 
     btn.textContent = '...'; btn.disabled = true;
 
@@ -581,7 +582,7 @@
     const cacheKey = currentStudentId + '_' + currentPeriodo;
     const map = scoresCache[cacheKey] || {};
     const scores = MATERIAS.map(m => map[m]?.score).filter(s => s !== undefined && s !== null && s !== '');
-    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+Number(b),0)/scores.length) : null;
+    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+Number(b),0)/scores.length * 10) / 10 : null;
     const g = scoreGrade(avg);
     document.getElementById('avgNum').textContent = avg !== null ? avg : '—';
     const badge = document.getElementById('avgBadge');
