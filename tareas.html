@@ -373,16 +373,7 @@
       <div class="field">
         <label>Grado</label>
         <select id="inGrade">
-          <option value="">-- Grado --</option>
-          <option value="prek">PreK</option>
-          <option value="kinder">Kinder</option>
-          <option value="1ro">1° Grado</option>
-          <option value="2do">2° Grado</option>
-          <option value="3ro">3° Grado</option>
-          <option value="4to">4° Grado</option>
-          <option value="5to">5° Grado</option>
-          <option value="6to">6° Grado</option>
-          <option value="all">Todos los grados</option>
+          <!-- Se llena dinámicamente en applySession según grades del docente -->
         </select>
       </div>
       <div class="field">
@@ -550,6 +541,8 @@
 
   function applySession() {
     const r = SESSION.role;
+    const grades = SESSION.grades || [];
+
     document.getElementById('pageTitle').textContent =
       r === 'estudiante' ? '📚 Mis tareas' : '📝 Tareas';
     document.getElementById('pageSubtitle').textContent =
@@ -563,6 +556,21 @@
 
     if (r === 'docente' || r === 'director') {
       document.getElementById('btnNueva').style.display = 'flex';
+
+      // Poblar selector de grado según grades del docente
+      const sel = document.getElementById('inGrade');
+      const gradeOpts = r === 'director'
+        ? ['prek','kinder','1ro','2do','3ro','4to','5to','6to']
+        : (grades.length ? grades : ['prek','kinder','1ro','2do','3ro','4to','5to','6to']);
+
+      sel.innerHTML = '<option value="">-- Grado --</option>' +
+        gradeOpts.map(g => `<option value="${g}">${GRADE_LABELS[g]||g}</option>`).join('') +
+        '<option value="all">Todos los grados</option>';
+
+      // Si solo tiene un grado → precargarlo
+      if (gradeOpts.length === 1) {
+        sel.value = gradeOpts[0];
+      }
     }
 
     // Fecha mínima hoy para el datepicker
@@ -572,8 +580,8 @@
   // ===== CARGAR TAREAS =====
   async function loadTasks() {
     try {
-      let q;
-      const role = SESSION.role;
+      const role   = SESSION.role;
+      const grades = SESSION.grades || [];
 
       if (role === 'estudiante' || role === 'padre') {
         // Solo tareas de su grado (o "all")
@@ -585,27 +593,32 @@
           window._collection(window._db, 'tasks'),
           window._where('grade', '==', 'all')
         ));
-        const docs = [...snap1.docs, ...snap2.docs];
-        allTasks = docs.map(d => ({ id: d.id, ...d.data() }));
-      } else {
-        // Docente/Director: sus propias tareas
-        const snap = await window._getDocs(
-          window._collection(window._db, 'tasks')
-        );
+        allTasks = [...snap1.docs, ...snap2.docs].map(d => ({ id: d.id, ...d.data() }));
+
+      } else if (role === 'director') {
+        // Director ve todas
+        const snap = await window._getDocs(window._collection(window._db, 'tasks'));
         allTasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        // Filtrar solo las del docente (excepto director que ve todas)
-        if (role === 'docente' && SESSION.uid !== 'demo') {
-          allTasks = allTasks.filter(t => t.createdBy === SESSION.uid);
+
+      } else {
+        // Docente: carga tareas de sus grados
+        const snap = await window._getDocs(window._collection(window._db, 'tasks'));
+        const todas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        if (grades.length > 0) {
+          // Mostrar tareas de sus grados O creadas por él O para "all"
+          allTasks = todas.filter(t =>
+            grades.includes(t.grade) ||
+            t.grade === 'all' ||
+            t.createdBy === SESSION.uid
+          );
+        } else {
+          // Sin grades en sesión → solo las suyas
+          allTasks = todas.filter(t => t.createdBy === SESSION.uid);
         }
       }
 
-      // Ordenar por dueDate desc
-      allTasks.sort((a,b) => {
-        const da = a.dueDate || '9999';
-        const db2 = b.dueDate || '9999';
-        return da.localeCompare(db2);
-      });
-
+      allTasks.sort((a,b) => (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
       renderTasks();
     } catch(e) {
       showToast('Error al cargar tareas.', 'error');

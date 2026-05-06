@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Barrigón Classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1923;
+    --bg2: #162030;
+    --bg3: #1e2d40;
+    --card: #1a2a3a;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0f4f8;
+    --muted: #7a9ab8;
+    --purple: #7c5cbf;
+    --purple-light: #9b7de0;
+    --blue: #2e7de9;
+    --blue-light: #5b9ef7;
+    --teal: #1a9e7a;
+    --teal-light: #2ecfa0;
+    --amber: #d4860a;
+    --amber-light: #f5a623;
+    --coral: #d94f3d;
+    --green: #2d9e5a;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== FONDO ANIMADO ===== */
+  .bg-orbs {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    overflow: hidden;
+  }
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); opacity: 0.18;
+    animation: drift 20s ease-in-out infinite;
+  }
+  .orb1 { width:400px; height:400px; background:#2e7de9; top:-100px; left:-100px; animation-delay:0s; }
+  .orb2 { width:350px; height:350px; background:#7c5cbf; bottom:-80px; right:-80px; animation-delay:-7s; }
+  .orb3 { width:250px; height:250px; background:#1a9e7a; top:40%; left:60%; animation-delay:-14s; }
+  @keyframes drift {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px,-20px) scale(1.05); }
+    66% { transform: translate(-20px,30px) scale(0.95); }
+  }
+
+  /* ===== PANTALLAS ===== */
+  .screen {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 40px;
+  }
+  .screen.active { display: flex; }
+
+  /* ===== PANTALLA INICIO ===== */
+  .hero {
+    width: 100%; max-width: 480px;
+    padding-top: 60px;
+    text-align: center;
+  }
+  .logo-wrap {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 88px; height: 88px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(46,125,233,0.3);
+    animation: pop 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes pop { from { transform: scale(0.5); opacity: 0; } }
+  .logo-wrap svg { width: 48px; height: 48px; }
+
+  .hero h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 28px; font-weight: 900;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .hero h1 span { color: var(--blue-light); }
+  .hero p {
+    color: var(--muted); font-size: 14px;
+    margin-bottom: 40px;
+  }
+
+  .roles-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 16px;
+  }
+
+  .roles-grid {
+    width: 100%; max-width: 480px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .role-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .role-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.2s;
+    border-radius: var(--radius);
+  }
+  .role-card:active { transform: scale(0.97); }
+
+  .role-card.director::before { background: linear-gradient(135deg, rgba(124,92,191,0.15), transparent); }
+  .role-card.docente::before  { background: linear-gradient(135deg, rgba(46,125,233,0.15), transparent); }
+  .role-card.estudiante::before { background: linear-gradient(135deg, rgba(26,158,122,0.15), transparent); }
+  .role-card.padre::before    { background: linear-gradient(135deg, rgba(212,134,10,0.15), transparent); }
+
+  .role-card:hover::before, .role-card:active::before { opacity: 1; }
+  .role-card.director { border-color: rgba(124,92,191,0.3); }
+  .role-card.docente  { border-color: rgba(46,125,233,0.3); }
+  .role-card.estudiante { border-color: rgba(26,158,122,0.3); }
+  .role-card.padre    { border-color: rgba(212,134,10,0.3); }
+
+  .role-icon {
+    font-size: 32px; margin-bottom: 10px;
+    display: block;
+  }
+  .role-card h3 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px; font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .role-card.director h3 { color: var(--purple-light); }
+  .role-card.docente h3  { color: var(--blue-light); }
+  .role-card.estudiante h3 { color: var(--teal-light); }
+  .role-card.padre h3    { color: var(--amber-light); }
+  .role-card p { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  /* ===== PANTALLA LOGIN ===== */
+  .login-wrap {
+    width: 100%; max-width: 420px;
+    padding-top: 50px;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none; color: var(--muted);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 14px; cursor: pointer; padding: 0;
+    margin-bottom: 32px;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--text); }
+
+  .login-header {
+    margin-bottom: 32px;
+  }
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .badge-director  { background: rgba(124,92,191,0.2); color: var(--purple-light); border: 1px solid rgba(124,92,191,0.3); }
+  .badge-docente   { background: rgba(46,125,233,0.2); color: var(--blue-light); border: 1px solid rgba(46,125,233,0.3); }
+  .badge-estudiante{ background: rgba(26,158,122,0.2); color: var(--teal-light); border: 1px solid rgba(26,158,122,0.3); }
+  .badge-padre     { background: rgba(212,134,10,0.2); color: var(--amber-light); border: 1px solid rgba(212,134,10,0.3); }
+
+  .login-header h2 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 26px; font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .login-header p { color: var(--muted); font-size: 14px; }
+
+  .form-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 12px; font-weight: 700;
+    color: var(--muted); letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-family: 'Nunito', sans-serif;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 13px 16px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: 'Nunito Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--blue);
+  }
+  .field input[type="password"] { letter-spacing: 3px; }
+  .field select option { background: var(--bg3); }
+
+  /* PIN grid */
+  .pin-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-top: 8px;
+  }
+  .pin-digit {
+    aspect-ratio: 1;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Nunito', sans-serif;
+    font-size: 24px; font-weight: 900;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .pin-digit.filled {
+    background: var(--bg2);
+    border-color: var(--blue);
+    color: var(--blue-light);
+  }
+  .pin-display {
+    display: flex; gap: 10px; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .pin-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    transition: all 0.2s;
+  }
+  .pin-dot.filled { background: var(--teal-light); border-color: var(--teal-light); }
+
+  .numpad {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .num-btn {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 20px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .num-btn:active { transform: scale(0.94); background: var(--bg2); }
+  .num-btn.del { font-size: 18px; color: var(--muted); }
+  .num-btn.empty { background: transparent; border-color: transparent; cursor: default; }
+
+  /* Grado selector */
+  .grade-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 8px;
+  }
+  .grade-chip {
+    padding: 8px 14px;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .grade-chip.selected {
+    background: rgba(26,158,122,0.2);
+    border-color: var(--teal-light);
+    color: var(--teal-light);
+  }
+
+  /* Botón principal */
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    border: none; border-radius: var(--radius-sm);
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px; font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-director  { background: linear-gradient(135deg, var(--purple), #5a3d99); color: #fff; box-shadow: 0 4px 20px rgba(124,92,191,0.3); }
+  .btn-docente   { background: linear-gradient(135deg, var(--blue), #1a5bc4); color: #fff; box-shadow: 0 4px 20px rgba(46,125,233,0.3); }
+  .btn-estudiante{ background: linear-gradient(135deg, var(--teal), #0e7a5c); color: #fff; box-shadow: 0 4px 20px rgba(26,158,122,0.3); }
+  .btn-padre     { background: linear-gradient(135deg, var(--amber), #a86200); color: #fff; box-shadow: 0 4px 20px rgba(212,134,10,0.3); }
+
+  .btn-microsoft {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+  }
+  .btn-microsoft:hover { border-color: var(--blue); }
+  .ms-logo { width: 20px; height: 20px; }
+
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 16px 0;
+    color: var(--muted); font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+
+  .error-msg {
+    background: rgba(217,79,61,0.15);
+    border: 1px solid rgba(217,79,61,0.3);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px; color: #ff7b6b;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* ===== DASHBOARD ===== */
+  .dashboard {
+    width: 100%; max-width: 480px;
+  }
+  .dash-header {
+    padding: 50px 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .dash-header h2 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 22px; font-weight: 900;
+  }
+  .dash-header h2 span { font-size: 14px; font-weight: 600; color: var(--muted); display: block; }
+
+  .logout-btn {
+    background: var(--bg3); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 8px 14px;
+    color: var(--muted); font-size: 13px; font-family: 'Nunito', sans-serif;
+    font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .logout-btn:hover { color: var(--text); border-color: var(--text); }
+
+  .dash-modules {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .module-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    cursor: pointer; transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .module-card:active { transform: scale(0.97); }
+  .module-card .mod-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+  .module-card h4 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px; font-weight: 800; margin-bottom: 3px;
+  }
+  .module-card p { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  .mod-blue   { border-color: rgba(46,125,233,0.3); }
+  .mod-blue h4 { color: var(--blue-light); }
+  .mod-teal   { border-color: rgba(26,158,122,0.3); }
+  .mod-teal h4 { color: var(--teal-light); }
+  .mod-amber  { border-color: rgba(212,134,10,0.3); }
+  .mod-amber h4 { color: var(--amber-light); }
+  .mod-purple { border-color: rgba(124,92,191,0.3); }
+  .mod-purple h4 { color: var(--purple-light); }
+  .mod-coral  { border-color: rgba(217,79,61,0.3); }
+  .mod-coral h4 { color: #ff7b6b; }
+  .mod-green  { border-color: rgba(45,158,90,0.3); }
+  .mod-green h4 { color: #5ae090; }
+
+  .coming-soon {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(122,154,184,0.15);
+    border: 1px solid rgba(122,154,184,0.2);
+    border-radius: 6px; padding: 2px 7px;
+    font-size: 9px; font-weight: 700;
+    color: var(--muted); letter-spacing: 0.5px;
+    font-family: 'Nunito', sans-serif;
+    text-transform: uppercase;
+  }
+
+  .dash-announce {
+    background: var(--card);
+    border: 1.5px solid rgba(46,125,233,0.25);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .announce-icon { font-size: 24px; }
+  .dash-announce h4 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 800;
+    color: var(--blue-light); margin-bottom: 3px;
+  }
+  .dash-announce p { font-size: 12px; color: var(--muted); }
+
+  .loading-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px;
+    transition: opacity 0.4s;
+  }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay p { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Cargando...</p>
+</div>
+
+<!-- ===== PANTALLA 1: INICIO ===== -->
+<div class="screen active" id="screenHome">
+  <div class="hero">
+    <div class="logo-wrap">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="14" width="36" height="26" rx="4" fill="white" fill-opacity="0.15"/>
+        <rect x="6" y="14" width="36" height="26" rx="4" stroke="white" stroke-width="2"/>
+        <path d="M16 8L24 14L32 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M24 14V26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="24" cy="29" r="3" fill="white" fill-opacity="0.9"/>
+        <path d="M14 34H20M28 34H34" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>Barrigón <span>Classroom</span></h1>
+    <p>CEBG Barrigón · PreK — 6° Grado</p>
+    <div class="roles-title">¿Quién eres?</div>
+  </div>
+
+  <div class="roles-grid">
+    <div class="role-card director" onclick="goToLogin('director')">
+      <span class="role-icon">👨‍💼</span>
+      <h3>Director</h3>
+      <p>Gestión general de la escuela</p>
+    </div>
+    <div class="role-card docente" onclick="goToLogin('docente')">
+      <span class="role-icon">👩‍🏫</span>
+      <h3>Docente</h3>
+      <p>Publicar tareas y calificar</p>
+    </div>
+    <div class="role-card estudiante" onclick="goToLogin('estudiante')">
+      <span class="role-icon">🎒</span>
+      <h3>Estudiante</h3>
+      <p>Ver tareas y entregar trabajos</p>
+    </div>
+    <div class="role-card padre" onclick="goToLogin('padre')">
+      <span class="role-icon">👨‍👩‍👧</span>
+      <h3>Padre / Madre</h3>
+      <p>Ver calificaciones y anuncios</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PANTALLA 2: LOGIN DIRECTOR / DOCENTE ===== -->
+<div class="screen" id="screenLoginEmail">
+  <div class="login-wrap">
+    <button class="back-btn" onclick="goHome()">
+      ← Volver
+    </button>
+    <div class="login-header">
+      <div class="role-badge" id="emailBadge">👨‍💼 Director</div>
+      <h2 id="emailTitle">Bienvenido</h2>
+      <p id="emailSubtitle">Ingresa con tu correo institucional</p>
+    </div>
+
+    <div class="form-card">
+      <button class="btn-microsoft" onclick="loginMicrosoft()">
+        <svg class="ms-logo" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+          <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+          <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+          <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+        </svg>
+        Continuar con Microsoft
+      </button>
+      <div class="divider">o usa tu correo</div>
+      <div class="error-msg" id="emailError">Credenciales incorrectas. Intenta de nuevo.</div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="emailInput" placeholder="nombre@meduca.edu.pa" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary btn-docente" id="emailLoginBtn" onclick="loginEmail()">
+        Ingresar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PANTALLA 3: LOGIN ESTUDIANTE (PIN) ===== -->
+<div class="screen" id="screenLoginPin">
+  <div class="login-wrap">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="login-header">
+      <div class="role-badge badge-estudiante">🎒 Estudiante</div>
+      <h2>Ingresa tu PIN</h2>
+      <p>Selecciona tu grado y escribe tu PIN de 4 dígitos</p>
+    </div>
+
+    <div class="form-card">
+      <div class="field">
+        <label>Grado</label>
+        <div class="grade-chips" id="gradeChips">
+          <div class="grade-chip" onclick="selectGrade(this,'prek')">PreK</div>
+          <div class="grade-chip" onclick="selectGrade(this,'kinder')">Kinder</div>
+          <div class="grade-chip" onclick="selectGrade(this,'1ro')">1°</div>
+          <div class="grade-chip" onclick="selectGrade(this,'2do')">2°</div>
+          <div class="grade-chip" onclick="selectGrade(this,'3ro')">3°</div>
+          <div class="grade-chip" onclick="selectGrade(this,'4to')">4°</div>
+          <div class="grade-chip" onclick="selectGrade(this,'5to')">5°</div>
+          <div class="grade-chip" onclick="selectGrade(this,'6to')">6°</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="field">
+        <label>PIN (4 dígitos)</label>
+        <div class="pin-display" id="pinDisplay">
+          <div class="pin-dot" id="dot0"></div>
+          <div class="pin-dot" id="dot1"></div>
+          <div class="pin-dot" id="dot2"></div>
+          <div class="pin-dot" id="dot3"></div>
+        </div>
+        <div class="numpad">
+          <div class="num-btn" onclick="pinPress('1')">1</div>
+          <div class="num-btn" onclick="pinPress('2')">2</div>
+          <div class="num-btn" onclick="pinPress('3')">3</div>
+          <div class="num-btn" onclick="pinPress('4')">4</div>
+          <div class="num-btn" onclick="pinPress('5')">5</div>
+          <div class="num-btn" onclick="pinPress('6')">6</div>
+          <div class="num-btn" onclick="pinPress('7')">7</div>
+          <div class="num-btn" onclick="pinPress('8')">8</div>
+          <div class="num-btn" onclick="pinPress('9')">9</div>
+          <div class="num-btn empty"></div>
+          <div class="num-btn" onclick="pinPress('0')">0</div>
+          <div class="num-btn del" onclick="pinDel()">⌫</div>
+        </div>
+      </div>
+      <div class="error-msg" id="pinError">PIN o grado incorrecto. Verifica e intenta de nuevo.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PANTALLA 4: LOGIN PADRE (PIN hijo) ===== -->
+<div class="screen" id="screenLoginPadre">
+  <div class="login-wrap">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="login-header">
+      <div class="role-badge badge-padre">👨‍👩‍👧 Padre / Madre</div>
+      <h2>Acceso familiar</h2>
+      <p>Ingresa el PIN de tu hijo/a para ver su progreso</p>
+    </div>
+    <div class="form-card">
+      <div class="field">
+        <label>Grado del estudiante</label>
+        <div class="grade-chips" id="gradeChipsPadre">
+          <div class="grade-chip" onclick="selectGradePadre(this,'prek')">PreK</div>
+          <div class="grade-chip" onclick="selectGradePadre(this,'kinder')">Kinder</div>
+          <div class="grade-chip" onclick="selectGradePadre(this,'1ro')">1°</div>
+          <div class="grade-chip" onclick="selectGradePadre(this,'2do')">2°</div>
+          <div class="grade-chip" onclick="selectGradePadre(this,'3ro')">3°</div>
+          <div class="grade-chip" onclick="selectGradePadre(this,'4to')">4°</div>
+          <div class="grade-chip" onclick="selectGradePadre(this,'5to')">5°</div>
+          <div class="grade-chip" onclick="selectGradePadre(this,'6to')">6°</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>PIN del estudiante</label>
+        <input type="tel" id="padrePin" placeholder="PIN de 4 dígitos" maxlength="4"
+          style="letter-spacing:8px; font-size:22px; font-family:'Nunito',sans-serif; font-weight:700; text-align:center;">
+      </div>
+      <div class="error-msg" id="padreError">PIN incorrecto. Verifica con el maestro.</div>
+      <button class="btn-primary btn-padre" onclick="loginPadre()">Ver progreso</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PANTALLA 5: DASHBOARD ===== -->
+<div class="screen" id="screenDashboard">
+  <div class="dashboard">
+    <div class="dash-header">
+      <div>
+        <span id="dashWelcome">Bienvenido</span>
+        <h2 id="dashName">Usuario</h2>
+      </div>
+      <button class="logout-btn" onclick="logout()">Salir</button>
+    </div>
+
+    <div class="dash-announce">
+      <span class="announce-icon">📢</span>
+      <div>
+        <h4>Bienvenidos al nuevo año escolar</h4>
+        <p>CEBG Barrigón · Publicado hoy</p>
+      </div>
+    </div>
+
+    <div class="dash-modules" id="dashModules">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, collection, query, where, getDocs }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJZFP_BZa5YR4GqDqYi938I15FxkUFsjE",
+    authDomain: "barrigon-classroom.firebaseapp.com",
+    projectId: "barrigon-classroom",
+    storageBucket: "barrigon-classroom.firebasestorage.app",
+    messagingSenderId: "987121913715",
+    appId: "1:987121913715:web:4d61a24e8facf6766bff06"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window._auth = auth;
+  window._db = db;
+  window._signInWithEmailAndPassword = signInWithEmailAndPassword;
+  window._signOut = signOut;
+  window._doc = doc;
+  window._getDoc = getDoc;
+  window._collection = collection;
+  window._query = query;
+  window._where = where;
+  window._getDocs = getDocs;
+
+  onAuthStateChanged(auth, (user) => {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  });
+</script>
+
+<script>
+  let currentRole = '';
+  let currentPin = '';
+  let selectedGrade = '';
+  let selectedGradePadre = '';
+
+  // ===== RUTAS POR MÓDULO =====
+  // 'url' → navega al archivo | null → coming soon
+  const MODULES = {
+    director: [
+      { icon:'👥', title:'Estudiantes', desc:'Gestionar acceso y PINs', color:'mod-purple', url:'estudiantes.html' },
+      { icon:'📢', title:'Anuncios', desc:'Comunicados a toda la escuela', color:'mod-teal', url:'anuncios.html' },
+      { icon:'✅', title:'Calificaciones', desc:'Ver notas por grado', color:'mod-amber', url:'calificaciones.html' },
+      { icon:'📝', title:'Tareas', desc:'Ver todas las tareas', color:'mod-blue', url:'tareas.html' },
+      { icon:'📊', title:'Reportes', desc:'Estadísticas generales', color:'mod-green', soon:true },
+      { icon:'⚙️', title:'Configuración', desc:'Ajustes del sistema', color:'mod-blue', soon:true },
+    ],
+    docente: [
+      { icon:'📝', title:'Mis tareas', desc:'Crear y gestionar tareas', color:'mod-blue', url:'tareas.html' },
+      { icon:'✅', title:'Calificaciones', desc:'Registrar notas', color:'mod-teal', url:'calificaciones.html' },
+      { icon:'📢', title:'Anuncios', desc:'Publicar avisos', color:'mod-purple', url:'anuncios.html' },
+      { icon:'👥', title:'Mi salón', desc:'Lista de estudiantes', color:'mod-green', url:'estudiantes.html' },
+      { icon:'📁', title:'Recursos', desc:'Subir materiales', color:'mod-amber', soon:true },
+      { icon:'🎮', title:'Juegos', desc:'Apps educativas', color:'mod-coral', soon:true },
+    ],
+    estudiante: [
+      { icon:'📚', title:'Mis tareas', desc:'Tareas pendientes', color:'mod-blue', url:'tareas.html' },
+      { icon:'📊', title:'Mis notas', desc:'Ver calificaciones', color:'mod-amber', url:'calificaciones.html' },
+      { icon:'📢', title:'Anuncios', desc:'Avisos de la escuela', color:'mod-green', url:'anuncios.html' },
+      { icon:'📁', title:'Recursos', desc:'Materiales de clase', color:'mod-purple', soon:true },
+      { icon:'📤', title:'Entregas', desc:'Enviar trabajos', color:'mod-teal', soon:true },
+      { icon:'🎮', title:'Juegos', desc:'Apps educativas', color:'mod-coral', soon:true },
+    ],
+    padre: [
+      { icon:'📊', title:'Calificaciones', desc:'Notas de mi hijo/a', color:'mod-amber', url:'calificaciones.html' },
+      { icon:'📝', title:'Tareas', desc:'Actividades asignadas', color:'mod-blue', url:'tareas.html' },
+      { icon:'📢', title:'Anuncios', desc:'Comunicados escolares', color:'mod-teal', url:'anuncios.html' },
+      { icon:'📁', title:'Recursos', desc:'Materiales de clase', color:'mod-purple', soon:true },
+    ],
+  };
+
+  // ===== SESIÓN =====
+  // uid y datos del usuario actual (se llena al login)
+  let _sessionData = {};
+
+  function saveSession(role, name, grade, uid, grades) {
+    _sessionData = { role, name, grade: grade||null, uid: uid||'demo', grades: grades||[] };
+    try { sessionStorage.setItem('bc_session', JSON.stringify(_sessionData)); } catch(e){}
+  }
+
+  function goToModule(url) {
+    if (!url) return;
+    window.location.href = url;
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function goHome() {
+    currentPin = '';
+    selectedGrade = '';
+    selectedGradePadre = '';
+    showScreen('screenHome');
+  }
+
+  function goToLogin(role) {
+    currentRole = role;
+    if (role === 'estudiante') {
+      showScreen('screenLoginPin');
+    } else if (role === 'padre') {
+      showScreen('screenLoginPadre');
+    } else {
+      const badge = document.getElementById('emailBadge');
+      const title = document.getElementById('emailTitle');
+      const subtitle = document.getElementById('emailSubtitle');
+      const btn = document.getElementById('emailLoginBtn');
+      if (role === 'director') {
+        badge.className = 'role-badge badge-director';
+        badge.textContent = '👨‍💼 Director';
+        title.textContent = 'Bienvenido, Director';
+        btn.className = 'btn-primary btn-director';
+      } else {
+        badge.className = 'role-badge badge-docente';
+        badge.textContent = '👩‍🏫 Docente';
+        title.textContent = 'Bienvenido/a, Docente';
+        btn.className = 'btn-primary btn-docente';
+      }
+      showScreen('screenLoginEmail');
+    }
+  }
+
+  function selectGrade(el, grade) {
+    document.querySelectorAll('#gradeChips .grade-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedGrade = grade;
+  }
+
+  function selectGradePadre(el, grade) {
+    document.querySelectorAll('#gradeChipsPadre .grade-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedGradePadre = grade;
+  }
+
+  function pinPress(digit) {
+    if (currentPin.length < 4) {
+      currentPin += digit;
+      updatePinDots();
+      if (currentPin.length === 4) setTimeout(loginPin, 300);
+    }
+  }
+
+  function pinDel() {
+    currentPin = currentPin.slice(0,-1);
+    updatePinDots();
+  }
+
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('dot'+i).classList.toggle('filled', i < currentPin.length);
+    }
+  }
+
+  async function loginEmail() {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+    const err = document.getElementById('emailError');
+    err.classList.remove('show');
+    if (!email || !password) { err.textContent = 'Completa todos los campos.'; err.classList.add('show'); return; }
+    try {
+      const cred = await window._signInWithEmailAndPassword(window._auth, email, password);
+      const userDoc = await window._getDoc(window._doc(window._db, 'users', cred.user.uid));
+      const userData = userDoc.exists() ? userDoc.data() : { name: email.split('@')[0], role: currentRole, grades: [] };
+      const userName = userData.name || email.split('@')[0];
+      const userGrades = userData.grades || [];
+      const userRole = userData.role || currentRole;
+      saveSession(userRole, userName, null, cred.user.uid, userGrades);
+      showDashboard(userName, userRole);
+    } catch(e) {
+      err.textContent = 'Correo o contraseña incorrectos.';
+      err.classList.add('show');
+    }
+  }
+
+  async function loginPin() {
+    const err = document.getElementById('pinError');
+    err.classList.remove('show');
+    if (!selectedGrade) { err.textContent = 'Selecciona tu grado primero.'; err.classList.add('show'); currentPin=''; updatePinDots(); return; }
+    try {
+      const q = window._query(
+        window._collection(window._db, 'users'),
+        window._where('pin', '==', currentPin),
+        window._where('grade', '==', selectedGrade),
+        window._where('role', '==', 'estudiante')
+      );
+      const snap = await window._getDocs(q);
+      if (snap.empty) {
+        err.classList.add('show');
+        currentPin = ''; updatePinDots();
+        return;
+      }
+      const userData = snap.docs[0].data();
+      const studentId = snap.docs[0].id;
+      const studentName = userData.name || 'Estudiante';
+      saveSession('estudiante', studentName, selectedGrade, studentId);
+      showDashboard(studentName, 'estudiante', selectedGrade);
+    } catch(e) {
+      err.textContent = 'Error de conexión. Intenta de nuevo.';
+      err.classList.add('show');
+      currentPin = ''; updatePinDots();
+    }
+  }
+
+  async function loginPadre() {
+    const pin = document.getElementById('padrePin').value.trim();
+    const err = document.getElementById('padreError');
+    err.classList.remove('show');
+    if (!selectedGradePadre || pin.length !== 4) {
+      err.textContent = 'Selecciona el grado e ingresa el PIN de 4 dígitos.';
+      err.classList.add('show'); return;
+    }
+    try {
+      const q = window._query(
+        window._collection(window._db, 'users'),
+        window._where('pin', '==', pin),
+        window._where('grade', '==', selectedGradePadre),
+        window._where('role', '==', 'estudiante')
+      );
+      const snap = await window._getDocs(q);
+      if (snap.empty) { err.classList.add('show'); return; }
+      const userData = snap.docs[0].data();
+      const studentId = snap.docs[0].id;
+      const parentName = 'Familia de ' + (userData.name || 'Estudiante');
+      saveSession('padre', parentName, selectedGradePadre, studentId);
+      showDashboard(parentName, 'padre', selectedGradePadre);
+    } catch(e) {
+      err.textContent = 'Error de conexión. Intenta de nuevo.';
+      err.classList.add('show');
+    }
+  }
+
+  function loginMicrosoft() {
+    alert('Login con Microsoft estará disponible próximamente.\nUsa correo y contraseña por ahora.');
+  }
+
+  function showDashboard(name, role, grade) {
+    document.getElementById('dashWelcome').textContent = grade ? `Grado ${grade} ·` : '';
+    document.getElementById('dashName').textContent = name;
+    const grid = document.getElementById('dashModules');
+    grid.innerHTML = '';
+    (MODULES[role] || []).forEach(mod => {
+      const action = mod.soon
+        ? ''
+        : `onclick="goToModule('${mod.url}')"`;
+      grid.innerHTML += `
+        <div class="module-card ${mod.color}" ${action} style="${mod.soon?'':'cursor:pointer'}">
+          ${mod.soon ? '<span class="coming-soon">Pronto</span>' : ''}
+          <span class="mod-icon">${mod.icon}</span>
+          <h4>${mod.title}</h4>
+          <p>${mod.desc}</p>
+        </div>`;
+    });
+    showScreen('screenDashboard');
+  }
+
+  async function logout() {
+    try { await window._signOut(window._auth); } catch(e) {}
+    try { sessionStorage.removeItem('bc_session'); } catch(e) {}
+    _sessionData = {};
+    currentRole = ''; currentPin = ''; selectedGrade = '';
+    goHome();
+  }
+</script>
+</body>
+</html>

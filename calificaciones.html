@@ -238,15 +238,7 @@
     <div class="field">
       <label>Grado</label>
       <select id="selGrade" onchange="onGradeChange()">
-        <option value="">-- Selecciona grado --</option>
-        <option value="prek">PreK</option>
-        <option value="kinder">Kinder</option>
-        <option value="1ro">1° Grado</option>
-        <option value="2do">2° Grado</option>
-        <option value="3ro">3° Grado</option>
-        <option value="4to">4° Grado</option>
-        <option value="5to">5° Grado</option>
-        <option value="6to">6° Grado</option>
+        <!-- Se llena dinámicamente según grades del docente -->
       </select>
     </div>
     <div class="field" id="studentFieldWrap" style="display:none">
@@ -338,10 +330,12 @@
     try { SESSION = JSON.parse(sessionStorage.getItem('bc_session') || 'null'); } catch(e){}
     if (!SESSION) {
       const p = new URLSearchParams(location.search);
-      SESSION = { role: p.get('rol')||'docente', name: p.get('name')||'Docente', grade: p.get('grade')||null, uid: p.get('uid')||'demo' };
+      SESSION = { role: p.get('rol')||'docente', name: p.get('name')||'Docente', grade: p.get('grade')||null, uid: p.get('uid')||'demo', grades: [] };
     }
 
     const r = SESSION.role;
+    const grades = SESSION.grades || [];
+
     document.getElementById('pageSubtitle').textContent = SESSION.name;
     document.getElementById('rolePill').innerHTML = (r==='docente'||r==='director')
       ? `<div class="role-pill pill-docente">${r==='director'?'👨‍💼 Director':'👩‍🏫 Docente'}</div>`
@@ -352,6 +346,26 @@
       document.getElementById('emptyTitle').textContent = 'Selecciona un estudiante';
       document.getElementById('emptyMsg').textContent = 'Elige el grado y el estudiante para registrar notas';
       document.getElementById('emptyState').classList.add('show');
+
+      // Poblar selector de grado
+      const gradeOpts = r === 'director'
+        ? ['prek','kinder','1ro','2do','3ro','4to','5to','6to']
+        : (grades.length ? grades : ['prek','kinder','1ro','2do','3ro','4to','5to','6to']);
+
+      const sel = document.getElementById('selGrade');
+
+      if (gradeOpts.length === 1) {
+        // Un solo grado → ocultar selector y cargar estudiantes automáticamente
+        sel.innerHTML = `<option value="${gradeOpts[0]}">${GRADE_LABELS[gradeOpts[0]]||gradeOpts[0]}</option>`;
+        sel.value = gradeOpts[0];
+        document.querySelector('.docente-controls .field').style.display = 'none';
+        currentGrade = gradeOpts[0];
+        onGradeChange();
+      } else {
+        sel.innerHTML = '<option value="">-- Selecciona grado --</option>' +
+          gradeOpts.map(g => `<option value="${g}">${GRADE_LABELS[g]||g}</option>`).join('');
+      }
+
       document.getElementById('loadingOverlay').classList.add('hidden');
     } else {
       // Estudiante — cargar sus notas directamente

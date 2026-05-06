@@ -174,6 +174,9 @@
     font-size:18px; font-weight:900;
     margin-bottom:20px;
   }
+  /* Modo editar — borde azul */
+  .modal.editing { border-color:rgba(46,125,233,0.35); }
+  .btn-save.editing { background:linear-gradient(135deg, var(--blue), #1a5bc4); box-shadow:0 4px 20px rgba(46,125,233,0.3); }
   .field { margin-bottom:16px; }
   .field label {
     display:block;
@@ -296,6 +299,24 @@
   .pin-value.hidden-pin { letter-spacing:5px; color:var(--muted); font-size:12px; }
   .pin-eye { font-size:14px; color:var(--muted); }
 
+  .btn-edit {
+    background:none; border:none;
+    color:var(--muted); font-size:16px;
+    cursor:pointer; padding:6px;
+    border-radius:8px; transition:all 0.2s;
+    flex-shrink:0;
+  }
+  .btn-edit:hover { color:var(--blue-light); background:rgba(46,125,233,0.1); }
+
+  .card-actions { display:flex; gap:4px; flex-shrink:0; }
+  .btn-edit {
+    background:none; border:none;
+    color:var(--muted); font-size:16px;
+    cursor:pointer; padding:6px;
+    border-radius:8px; transition:all 0.2s;
+    flex-shrink:0;
+  }
+  .btn-edit:hover { color:var(--blue-light); background:rgba(46,125,233,0.1); }
   .btn-delete {
     background:none; border:none;
     color:var(--muted); font-size:18px;
@@ -569,7 +590,7 @@
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h3>➕ Nuevo estudiante</h3>
+    <h3 id="modalTitle">➕ Nuevo estudiante</h3>
     <div class="error-msg" id="formError"></div>
     <div class="field">
       <label>Nombre completo</label>
@@ -736,7 +757,7 @@ Ana López,kinder,5678</code>
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, deleteDoc, getDocs, doc, query, where, orderBy }
+  import { getFirestore, collection, addDoc, deleteDoc, getDocs, doc, query, where, orderBy, updateDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -760,6 +781,7 @@ Ana López,kinder,5678</code>
   window._query = query;
   window._where = where;
   window._orderBy = orderBy;
+  window._updateDoc = updateDoc;
 
   // Cargar al inicio
   window.addEventListener('load', () => {
@@ -771,6 +793,7 @@ Ana López,kinder,5678</code>
   let allStudents = [];
   let currentFilter = 'all';
   let deleteTargetId = null;
+  let editingId = null;        // null = modo crear, string = modo editar
   let pinVisible = {}; // trackea qué PINs están visibles
 
   const GRADE_LABELS = {
@@ -833,6 +856,7 @@ Ana López,kinder,5678</code>
             ${pinVisible[s.id] ? (s.pin||'—') : '••••'}
           </span>
         </div>
+        <button class="btn-edit" onclick="openEditModal('${s.id}')">✏️</button>
         <button class="btn-delete" onclick="askDelete('${s.id}','${escHtml(s.name||'')}')">🗑️</button>
       </div>
     `).join('');
@@ -865,11 +889,26 @@ Ana López,kinder,5678</code>
 
   // ===== MODAL =====
   function openModal() {
+    editingId = null;
+    document.getElementById('modalTitle').textContent = '➕ Nuevo estudiante';
     document.getElementById('inputName').value = '';
     document.getElementById('inputGrade').value = '';
     document.getElementById('inputPin').value = '';
     document.getElementById('formError').classList.remove('show');
     generatePin();
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('inputName').focus(), 350);
+  }
+
+  function openEditModal(id) {
+    const s = allStudents.find(st => st.id === id);
+    if (!s) return;
+    editingId = id;
+    document.getElementById('modalTitle').textContent = '✏️ Editar estudiante';
+    document.getElementById('inputName').value  = s.name  || '';
+    document.getElementById('inputGrade').value = s.grade || '';
+    document.getElementById('inputPin').value   = s.pin   || '';
+    document.getElementById('formError').classList.remove('show');
     document.getElementById('modalOverlay').classList.add('open');
     setTimeout(() => document.getElementById('inputName').focus(), 350);
   }
@@ -899,20 +938,35 @@ Ana López,kinder,5678</code>
     if (!grade) { err.textContent = 'Selecciona el grado.'; err.classList.add('show'); return; }
     if (!/^\d{4}$/.test(pin)) { err.textContent = 'El PIN debe tener exactamente 4 dígitos.'; err.classList.add('show'); return; }
 
-    // Verificar PIN duplicado en mismo grado
-    const dup = allStudents.find(s => s.pin === pin && s.grade === grade);
+    // Verificar PIN duplicado en mismo grado (excluir el propio al editar)
+    const dup = allStudents.find(s => s.pin === pin && s.grade === grade && s.id !== editingId);
     if (dup) { err.textContent = `El PIN ${pin} ya está en uso en ${GRADE_LABELS[grade]}. Genera otro.`; err.classList.add('show'); return; }
 
     try {
-      const ref = await window._addDoc(window._collection(window._db, 'users'), {
-        name, grade, pin, role: 'estudiante',
-        createdAt: new Date().toISOString()
-      });
-      allStudents.push({ id: ref.id, name, grade, pin, role: 'estudiante' });
-      allStudents.sort((a,b) => a.name.localeCompare(b.name));
-      closeModal();
-      renderList();
-      showToast('✅ ' + name + ' agregado', 'success');
+      if (editingId) {
+        // ===== ACTUALIZAR =====
+        await window._updateDoc(window._doc(window._db, 'users', editingId), {
+          name, grade, pin, updatedAt: new Date().toISOString()
+        });
+        const idx = allStudents.findIndex(s => s.id === editingId);
+        if (idx > -1) allStudents[idx] = { ...allStudents[idx], name, grade, pin };
+        allStudents.sort((a,b) => a.name.localeCompare(b.name));
+        pinVisible[editingId] = false; // ocultar PIN al guardar
+        closeModal();
+        renderList();
+        showToast('✅ ' + name + ' actualizado', 'success');
+      } else {
+        // ===== CREAR =====
+        const ref = await window._addDoc(window._collection(window._db, 'users'), {
+          name, grade, pin, role: 'estudiante',
+          createdAt: new Date().toISOString()
+        });
+        allStudents.push({ id: ref.id, name, grade, pin, role: 'estudiante' });
+        allStudents.sort((a,b) => a.name.localeCompare(b.name));
+        closeModal();
+        renderList();
+        showToast('✅ ' + name + ' agregado', 'success');
+      }
     } catch(e) {
       err.textContent = 'Error al guardar. Intenta de nuevo.';
       err.classList.add('show');
