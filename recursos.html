@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Recursos · Barrigón Classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1923; --bg2:#162030; --bg3:#1e2d40; --card:#1a2a3a;
+    --border:rgba(255,255,255,0.08); --text:#f0f4f8; --muted:#7a9ab8;
+    --blue:#2e7de9; --blue-light:#5b9ef7;
+    --teal:#1a9e7a; --teal-light:#2ecfa0;
+    --amber:#d4860a; --amber-light:#f5a623;
+    --coral:#d94f3d; --coral-light:#ff7b6b;
+    --purple:#7c5cbf; --purple-light:#9b7de0;
+    --green:#2d9e5a; --green-light:#5ae090;
+    --radius:16px; --radius-sm:10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Nunito Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  .bg-orbs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.11; animation:drift 22s ease-in-out infinite; }
+  .orb1 { width:340px; height:340px; background:#2d9e5a; top:-80px; right:-60px; animation-delay:0s; }
+  .orb2 { width:260px; height:260px; background:#7c5cbf; bottom:-50px; left:-40px; animation-delay:-11s; }
+  @keyframes drift { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-15px,20px) scale(1.04);} }
+
+  .container { position:relative; z-index:1; width:100%; max-width:480px; margin:0 auto; padding:0 16px 80px; }
+
+  /* HEADER */
+  .page-header { padding:50px 0 20px; display:flex; align-items:center; gap:14px; }
+  .back-btn {
+    background:var(--bg3); border:1.5px solid var(--border); border-radius:10px;
+    width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:18px; cursor:pointer; text-decoration:none; flex-shrink:0; transition:all 0.2s;
+  }
+  .back-btn:hover { color:var(--text); border-color:var(--muted); }
+  .header-text h1 { font-family:'Nunito',sans-serif; font-size:22px; font-weight:900; }
+  .header-text p { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  /* TABS */
+  .main-tabs {
+    display:flex; gap:6px; margin-bottom:18px;
+    background:var(--bg3); border-radius:12px; padding:4px;
+  }
+  .main-tab {
+    flex:1; padding:10px 4px; border:none; border-radius:9px;
+    background:transparent; color:var(--muted);
+    font-family:'Nunito',sans-serif; font-size:14px; font-weight:700;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .main-tab.active-recursos { background:var(--card); color:var(--amber-light); box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+  .main-tab.active-juegos   { background:var(--card); color:var(--coral-light); box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+
+  /* FILTROS */
+  .filter-row {
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
+    scrollbar-width:none; margin-bottom:16px;
+  }
+  .filter-row::-webkit-scrollbar { display:none; }
+  .filter-chip {
+    padding:7px 14px; background:var(--bg3);
+    border:1.5px solid var(--border); border-radius:20px;
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:700;
+    color:var(--muted); cursor:pointer; transition:all 0.15s;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .filter-chip.sel-amber { background:rgba(212,134,10,0.15); border-color:var(--amber-light); color:var(--amber-light); }
+  .filter-chip.sel-coral { background:rgba(217,79,61,0.15); border-color:var(--coral-light); color:var(--coral-light); }
+
+  /* BOTÓN AGREGAR */
+  .btn-agregar {
+    width:100%; padding:15px;
+    border:none; border-radius:var(--radius-sm);
+    color:#fff; font-family:'Nunito',sans-serif;
+    font-size:15px; font-weight:800;
+    cursor:pointer; transition:all 0.2s;
+    display:none; align-items:center; justify-content:center; gap:8px;
+    margin-bottom:20px;
+  }
+  .btn-agregar.visible { display:flex; }
+  .btn-agregar.amber { background:linear-gradient(135deg,var(--amber),#a86200); box-shadow:0 4px 20px rgba(212,134,10,0.3); }
+  .btn-agregar.coral { background:linear-gradient(135deg,var(--coral),#a83020); box-shadow:0 4px 20px rgba(217,79,61,0.3); }
+  .btn-agregar:active { transform:scale(0.98); }
+
+  /* TARJETAS RECURSO */
+  .resource-list { display:flex; flex-direction:column; gap:10px; }
+
+  .resource-card {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:14px 16px;
+    display:flex; align-items:center; gap:14px;
+    animation:slideIn 0.2s ease; cursor:pointer; transition:all 0.2s;
+    text-decoration:none; color:var(--text);
+    position:relative;
+  }
+  .resource-card:active { transform:scale(0.98); }
+  @keyframes slideIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+  .res-icon {
+    width:44px; height:44px; border-radius:12px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+  }
+  .icon-pdf   { background:rgba(217,79,61,0.2); }
+  .icon-video { background:rgba(46,125,233,0.2); }
+  .icon-link  { background:rgba(26,158,122,0.2); }
+  .icon-game  { background:rgba(124,92,191,0.2); }
+  .icon-app   { background:rgba(212,134,10,0.2); }
+
+  .res-info { flex:1; min-width:0; }
+  .res-title { font-family:'Nunito',sans-serif; font-size:14px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .res-meta  { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  .res-actions { display:flex; gap:6px; flex-shrink:0; }
+  .btn-res-del {
+    background:none; border:none; color:var(--muted); font-size:16px;
+    cursor:pointer; padding:4px; border-radius:6px; transition:all 0.2s;
+  }
+  .btn-res-del:hover { color:var(--coral-light); background:rgba(217,79,61,0.1); }
+
+  /* TARJETAS JUEGO — más grandes y llamativas */
+  .games-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .game-card {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:20px 14px;
+    text-align:center; cursor:pointer; transition:all 0.2s;
+    text-decoration:none; color:var(--text);
+    animation:slideIn 0.2s ease; position:relative; overflow:hidden;
+  }
+  .game-card:active { transform:scale(0.96); }
+  .game-emoji { font-size:40px; margin-bottom:10px; display:block; }
+  .game-title { font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; margin-bottom:3px; line-height:1.3; }
+  .game-grade { font-size:10px; color:var(--muted); }
+  .btn-game-del {
+    position:absolute; top:8px; right:8px;
+    background:none; border:none; color:var(--muted); font-size:14px;
+    cursor:pointer; padding:2px; border-radius:6px; transition:all 0.2s;
+  }
+  .btn-game-del:hover { color:var(--coral-light); }
+
+  /* EMPTY */
+  .empty-state { text-align:center; padding:52px 20px; display:none; }
+  .empty-state.show { display:block; }
+  .empty-icon { font-size:52px; margin-bottom:14px; }
+  .empty-state h3 { font-family:'Nunito',sans-serif; font-size:17px; font-weight:800; margin-bottom:6px; }
+  .empty-state p { font-size:13px; color:var(--muted); }
+
+  /* MODAL */
+  .modal-overlay {
+    position:fixed; inset:0; z-index:50;
+    background:rgba(10,16,24,0.88); backdrop-filter:blur(6px);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity 0.25s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal {
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:24px 24px 0 0; padding:28px 20px 48px;
+    width:100%; max-width:480px;
+    transform:translateY(40px);
+    transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-height:92vh; overflow-y:auto;
+  }
+  .modal-overlay.open .modal { transform:translateY(0); }
+  .modal-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 22px; }
+  .modal h3 { font-family:'Nunito',sans-serif; font-size:18px; font-weight:900; margin-bottom:20px; }
+
+  .field { margin-bottom:16px; }
+  .field label {
+    display:block; font-size:11px; font-weight:700; color:var(--muted);
+    letter-spacing:0.8px; text-transform:uppercase; margin-bottom:7px; font-family:'Nunito',sans-serif;
+  }
+  .field input, .field select {
+    width:100%; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:13px 16px; color:var(--text);
+    font-size:15px; font-family:'Nunito Sans',sans-serif;
+    outline:none; transition:border-color 0.2s; -webkit-appearance:none;
+  }
+  .field input:focus, .field select:focus { border-color:var(--amber); }
+  .field select option { background:var(--bg3); }
+
+  /* Selector de emoji */
+  .emoji-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .emoji-opt {
+    width:44px; height:44px; border-radius:10px; border:1.5px solid var(--border);
+    background:var(--bg3); display:flex; align-items:center; justify-content:center;
+    font-size:22px; cursor:pointer; transition:all 0.15s;
+  }
+  .emoji-opt.selected { border-color:var(--coral-light); background:rgba(217,79,61,0.15); }
+
+  .error-msg {
+    background:rgba(217,79,61,0.15); border:1px solid rgba(217,79,61,0.3);
+    border-radius:var(--radius-sm); padding:10px 14px;
+    font-size:12px; color:var(--coral-light); margin-bottom:12px; display:none;
+  }
+  .error-msg.show { display:block; }
+
+  .modal-actions { display:flex; gap:10px; margin-top:20px; }
+  .btn-cancel {
+    flex:1; padding:14px; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); color:var(--muted); font-family:'Nunito',sans-serif;
+    font-size:15px; font-weight:700; cursor:pointer;
+  }
+  .btn-save-amber {
+    flex:2; padding:14px; background:linear-gradient(135deg,var(--amber),#a86200);
+    border:none; border-radius:var(--radius-sm); color:#fff;
+    font-family:'Nunito',sans-serif; font-size:15px; font-weight:800; cursor:pointer;
+    box-shadow:0 4px 16px rgba(212,134,10,0.3);
+  }
+  .btn-save-coral {
+    flex:2; padding:14px; background:linear-gradient(135deg,var(--coral),#a83020);
+    border:none; border-radius:var(--radius-sm); color:#fff;
+    font-family:'Nunito',sans-serif; font-size:15px; font-weight:800; cursor:pointer;
+    box-shadow:0 4px 16px rgba(217,79,61,0.3);
+  }
+  .btn-save-amber:disabled, .btn-save-coral:disabled { opacity:0.5; cursor:not-allowed; box-shadow:none; }
+  .btn-save-amber:not(:disabled):active, .btn-save-coral:not(:disabled):active, .btn-cancel:active { transform:scale(0.97); }
+
+  /* CONFIRM */
+  .confirm-overlay {
+    position:fixed; inset:0; z-index:60;
+    background:rgba(10,16,24,0.88); backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; opacity:0; pointer-events:none; transition:opacity 0.2s;
+  }
+  .confirm-overlay.open { opacity:1; pointer-events:all; }
+  .confirm-box {
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:24px 20px;
+    width:100%; max-width:320px; text-align:center;
+    transform:scale(0.9); transition:transform 0.2s;
+  }
+  .confirm-overlay.open .confirm-box { transform:scale(1); }
+  .confirm-box p { font-family:'Nunito',sans-serif; font-size:15px; font-weight:700; margin-bottom:5px; }
+  .confirm-box span { font-size:12px; color:var(--muted); }
+  .confirm-actions { display:flex; gap:10px; margin-top:18px; }
+  .btn-conf-cancel {
+    flex:1; padding:12px; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); color:var(--muted);
+    font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer;
+  }
+  .btn-conf-del {
+    flex:1; padding:12px; background:rgba(217,79,61,0.2);
+    border:1.5px solid rgba(217,79,61,0.4); border-radius:var(--radius-sm);
+    color:var(--coral-light); font-family:'Nunito',sans-serif; font-size:14px; font-weight:800; cursor:pointer;
+  }
+
+  /* LOADING / TOAST */
+  .loading-overlay {
+    position:fixed; inset:0; z-index:100; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    transition:opacity 0.4s;
+  }
+  .loading-overlay.hidden { opacity:0; pointer-events:none; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--amber); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .loading-overlay p { color:var(--muted); font-size:14px; }
+  .toast {
+    position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:12px; padding:12px 20px;
+    font-family:'Nunito',sans-serif; font-size:14px; font-weight:700;
+    white-space:nowrap; z-index:200; opacity:0; transition:all 0.3s; pointer-events:none;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.success { border-color:rgba(26,158,122,0.4); color:var(--teal-light); }
+  .toast.error   { border-color:rgba(217,79,61,0.4); color:var(--coral-light); }
+</style>
+</head>
+<body>
+
+<div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p>Cargando...</p></div>
+<div class="toast" id="toast"></div>
+
+<!-- MODAL RECURSO -->
+<div class="modal-overlay" id="modalRecurso" onclick="closeModalOutside(event,'modalRecurso')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>📁 Agregar recurso</h3>
+    <div class="error-msg" id="errRecurso"></div>
+    <div class="field">
+      <label>Título</label>
+      <input type="text" id="rTitle" placeholder="Ej: Guía de Matemáticas U1" maxlength="80">
+    </div>
+    <div class="field">
+      <label>Enlace (OneDrive, Google Drive, YouTube...)</label>
+      <input type="url" id="rUrl" placeholder="https://...">
+    </div>
+    <div class="field">
+      <label>Tipo</label>
+      <select id="rType">
+        <option value="pdf">📄 PDF / Documento</option>
+        <option value="video">📹 Video</option>
+        <option value="link">🔗 Enlace web</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Grado</label>
+      <select id="rGrade">
+        <option value="all">Todos los grados</option>
+        <option value="prek">PreK</option>
+        <option value="kinder">Kinder</option>
+        <option value="1ro">1° Grado</option>
+        <option value="2do">2° Grado</option>
+        <option value="3ro">3° Grado</option>
+        <option value="4to">4° Grado</option>
+        <option value="5to">5° Grado</option>
+        <option value="6to">6° Grado</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalRecurso')">Cancelar</button>
+      <button class="btn-save-amber" id="btnSaveRecurso" onclick="saveRecurso()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL JUEGO -->
+<div class="modal-overlay" id="modalJuego" onclick="closeModalOutside(event,'modalJuego')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>🎮 Agregar juego / app</h3>
+    <div class="error-msg" id="errJuego"></div>
+    <div class="field">
+      <label>Nombre</label>
+      <input type="text" id="gTitle" placeholder="Ej: Grammar Jumper" maxlength="50">
+    </div>
+    <div class="field">
+      <label>URL del juego</label>
+      <input type="url" id="gUrl" placeholder="https://...">
+    </div>
+    <div class="field">
+      <label>Ícono</label>
+      <div class="emoji-picker" id="emojiPicker">
+        <div class="emoji-opt selected" onclick="selectEmoji(this,'🎮')">🎮</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🧩')">🧩</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🏆')">🏆</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'⭐')">⭐</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🚀')">🚀</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🌍')">🌍</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'📚')">📚</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🔢')">🔢</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🔤')">🔤</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🎯')">🎯</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🧠')">🧠</div>
+        <div class="emoji-opt" onclick="selectEmoji(this,'🎨')">🎨</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Grado</label>
+      <select id="gGrade">
+        <option value="all">Todos los grados</option>
+        <option value="prek">PreK</option>
+        <option value="kinder">Kinder</option>
+        <option value="1ro">1° Grado</option>
+        <option value="2do">2° Grado</option>
+        <option value="3ro">3° Grado</option>
+        <option value="4to">4° Grado</option>
+        <option value="5to">5° Grado</option>
+        <option value="6to">6° Grado</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalJuego')">Cancelar</button>
+      <button class="btn-save-coral" id="btnSaveJuego" onclick="saveJuego()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div style="font-size:36px;margin-bottom:12px;">🗑️</div>
+    <p id="confirmText">¿Eliminar este elemento?</p>
+    <span>Esta acción no se puede deshacer.</span>
+    <div class="confirm-actions">
+      <button class="btn-conf-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-conf-del" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="container">
+  <div class="page-header">
+    <a class="back-btn" href="index.html">←</a>
+    <div class="header-text">
+      <h1>📁 Recursos y Juegos</h1>
+      <p id="pageSubtitle">CEBG Barrigón</p>
+    </div>
+  </div>
+
+  <!-- Tabs principales -->
+  <div class="main-tabs">
+    <button class="main-tab active-recursos" id="tabRecursos" onclick="setTab('recursos')">📁 Recursos</button>
+    <button class="main-tab" id="tabJuegos" onclick="setTab('juegos')">🎮 Juegos</button>
+  </div>
+
+  <!-- Filtro grado -->
+  <div class="filter-row" id="filterRow"></div>
+
+  <!-- Botones agregar (solo docente) -->
+  <button class="btn-agregar amber" id="btnAgregarRecurso" onclick="openModal('modalRecurso')">＋ Agregar recurso</button>
+  <button class="btn-agregar coral" id="btnAgregarJuego" onclick="openModal('modalJuego')" style="display:none">＋ Agregar juego</button>
+
+  <!-- Listas -->
+  <div class="resource-list" id="resourceList"></div>
+  <div class="games-grid" id="gamesList" style="display:none"></div>
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon" id="emptyIcon">📭</div>
+    <h3 id="emptyTitle">Sin recursos aún</h3>
+    <p id="emptyMsg">Los materiales publicados aparecerán aquí</p>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, deleteDoc, getDocs, doc, query, where, orderBy }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJZFP_BZa5YR4GqDqYi938I15FxkUFsjE",
+    authDomain: "barrigon-classroom.firebaseapp.com",
+    projectId: "barrigon-classroom",
+    storageBucket: "barrigon-classroom.firebasestorage.app",
+    messagingSenderId: "987121913715",
+    appId: "1:987121913715:web:4d61a24e8facf6766bff06"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  window._db=db; window._collection=collection; window._addDoc=addDoc;
+  window._deleteDoc=deleteDoc; window._getDocs=getDocs; window._doc=doc;
+  window._query=query; window._where=where; window._orderBy=orderBy;
+  window.addEventListener('load', initPage);
+</script>
+
+<script>
+  let SESSION = null;
+  let currentTab = 'recursos';
+  let currentFilter = 'all';
+  let allResources = [];
+  let allGames = [];
+  let deleteTargetId = null;
+  let deleteTargetCol = null;
+  let selectedEmoji = '🎮';
+
+  const GRADE_LABELS = {
+    all:'Todos', prek:'PreK', kinder:'Kinder',
+    '1ro':'1°','2do':'2°','3ro':'3°','4to':'4°','5to':'5°','6to':'6°'
+  };
+
+  const TYPE_ICONS = { pdf:'📄', video:'📹', link:'🔗', game:'🎮', app:'📱' };
+  const TYPE_CLASS = { pdf:'icon-pdf', video:'icon-video', link:'icon-link', game:'icon-game', app:'icon-app' };
+
+  // ===== INIT =====
+  function initPage() {
+    try { SESSION = JSON.parse(sessionStorage.getItem('bc_session')||'null'); } catch(e){}
+    if (!SESSION) {
+      const p = new URLSearchParams(location.search);
+      SESSION = { role:p.get('rol')||'estudiante', name:p.get('name')||'Usuario', grade:p.get('grade')||null, uid:p.get('uid')||'demo', grades:[] };
+    }
+    document.getElementById('pageSubtitle').textContent = SESSION.name;
+
+    const canEdit = SESSION.role === 'docente' || SESSION.role === 'director';
+    if (canEdit) {
+      document.getElementById('btnAgregarRecurso').classList.add('visible');
+    }
+
+    buildFilterChips();
+    loadAll();
+  }
+
+  // ===== FILTROS =====
+  function buildFilterChips() {
+    const row = document.getElementById('filterRow');
+    const grades = ['all','prek','kinder','1ro','2do','3ro','4to','5to','6to'];
+    row.innerHTML = grades.map((g,i) =>
+      `<div class="filter-chip ${i===0?'sel-amber':''}" onclick="setFilter(this,'${g}')">${GRADE_LABELS[g]}</div>`
+    ).join('');
+  }
+
+  function setFilter(el, grade) {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('sel-amber','sel-coral'));
+    el.classList.add(currentTab === 'recursos' ? 'sel-amber' : 'sel-coral');
+    currentFilter = grade;
+    renderCurrent();
+  }
+
+  // ===== TABS =====
+  function setTab(tab) {
+    currentTab = tab;
+    const canEdit = SESSION.role === 'docente' || SESSION.role === 'director';
+
+    document.getElementById('tabRecursos').className = 'main-tab' + (tab==='recursos' ? ' active-recursos' : '');
+    document.getElementById('tabJuegos').className   = 'main-tab' + (tab==='juegos'   ? ' active-juegos'   : '');
+
+    document.getElementById('resourceList').style.display = tab==='recursos' ? 'flex' : 'none';
+    document.getElementById('gamesList').style.display    = tab==='juegos'   ? 'grid' : 'none';
+
+    if (canEdit) {
+      document.getElementById('btnAgregarRecurso').style.display = tab==='recursos' ? 'flex' : 'none';
+      document.getElementById('btnAgregarJuego').style.display   = tab==='juegos'   ? 'flex' : 'none';
+      if (tab==='juegos') document.getElementById('btnAgregarJuego').classList.add('visible');
+    }
+
+    // Actualizar color de chips
+    document.querySelectorAll('.filter-chip').forEach(c => {
+      c.classList.remove('sel-amber','sel-coral');
+      if (c.textContent === GRADE_LABELS[currentFilter]) {
+        c.classList.add(tab==='recursos' ? 'sel-amber' : 'sel-coral');
+      }
+    });
+    // Reset filter
+    currentFilter = 'all';
+    document.querySelectorAll('.filter-chip')[0]?.classList.add(tab==='recursos'?'sel-amber':'sel-coral');
+
+    renderCurrent();
+  }
+
+  // ===== CARGAR =====
+  async function loadAll() {
+    try {
+      const [snapR, snapG] = await Promise.all([
+        window._getDocs(window._collection(window._db,'resources')),
+        window._getDocs(window._collection(window._db,'games'))
+      ]);
+      allResources = snapR.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+      allGames = snapG.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+      renderCurrent();
+    } catch(e) {
+      showToast('Error al cargar.','error');
+    } finally {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+  }
+
+  // ===== RENDER =====
+  function renderCurrent() {
+    if (currentTab === 'recursos') renderResources();
+    else renderGames();
+  }
+
+  function filterByGrade(items) {
+    const grade = SESSION.grade;
+    return items.filter(i => {
+      if (currentFilter !== 'all') return i.grade === currentFilter || i.grade === 'all';
+      // Para estudiantes: solo su grado + all
+      if (SESSION.role === 'estudiante' || SESSION.role === 'padre') {
+        return i.grade === 'all' || i.grade === grade;
+      }
+      return true;
+    });
+  }
+
+  function renderResources() {
+    const list  = document.getElementById('resourceList');
+    const empty = document.getElementById('emptyState');
+    const canEdit = SESSION.role === 'docente' || SESSION.role === 'director';
+    const filtered = filterByGrade(allResources);
+
+    if (filtered.length === 0) {
+      list.innerHTML = ''; empty.classList.add('show');
+      document.getElementById('emptyIcon').textContent = '📭';
+      document.getElementById('emptyTitle').textContent = 'Sin recursos aún';
+      document.getElementById('emptyMsg').textContent = canEdit
+        ? 'Agrega el primer material con el botón de arriba'
+        : 'Tu docente publicará materiales aquí';
+      return;
+    }
+    empty.classList.remove('show');
+
+    list.innerHTML = filtered.map(r => `
+      <a class="resource-card" href="${escHtml(r.url||'#')}" target="_blank" rel="noopener"
+        onclick="trackOpen(event,'${r.id}')">
+        <div class="res-icon ${TYPE_CLASS[r.type]||'icon-link'}">${TYPE_ICONS[r.type]||'🔗'}</div>
+        <div class="res-info">
+          <div class="res-title">${escHtml(r.title||'Sin título')}</div>
+          <div class="res-meta">${GRADE_LABELS[r.grade]||r.grade||'—'} · ${escHtml(r.uploadedBy||'')}</div>
+        </div>
+        ${canEdit ? `<div class="res-actions" onclick="event.preventDefault()">
+          <button class="btn-res-del" onclick="askDelete('${r.id}','resources','${escHtml(r.title||'')}')">🗑️</button>
+        </div>` : ''}
+      </a>`).join('');
+  }
+
+  function renderGames() {
+    const grid  = document.getElementById('gamesList');
+    const empty = document.getElementById('emptyState');
+    const canEdit = SESSION.role === 'docente' || SESSION.role === 'director';
+    const filtered = filterByGrade(allGames);
+
+    if (filtered.length === 0) {
+      grid.innerHTML = ''; empty.classList.add('show');
+      document.getElementById('emptyIcon').textContent = '🎮';
+      document.getElementById('emptyTitle').textContent = 'Sin juegos aún';
+      document.getElementById('emptyMsg').textContent = canEdit
+        ? 'Agrega el primer juego con el botón de arriba'
+        : 'Tu docente agregará juegos aquí';
+      return;
+    }
+    empty.classList.remove('show');
+
+    grid.innerHTML = filtered.map(g => `
+      <a class="game-card" href="${escHtml(g.url||'#')}" target="_blank" rel="noopener">
+        ${canEdit ? `<button class="btn-game-del" onclick="event.preventDefault();askDelete('${g.id}','games','${escHtml(g.title||'')}')">🗑️</button>` : ''}
+        <span class="game-emoji">${g.emoji||'🎮'}</span>
+        <div class="game-title">${escHtml(g.title||'Juego')}</div>
+        <div class="game-grade">${GRADE_LABELS[g.grade]||g.grade||'Todos'}</div>
+      </a>`).join('');
+  }
+
+  function trackOpen(e, id) {
+    // Solo abre el link — se puede agregar tracking después
+  }
+
+  // ===== MODAL =====
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    if (id === 'modalRecurso') {
+      document.getElementById('rTitle').value = '';
+      document.getElementById('rUrl').value = '';
+      document.getElementById('rGrade').value = 'all';
+      document.getElementById('errRecurso').classList.remove('show');
+      document.getElementById('btnSaveRecurso').disabled = false;
+      document.getElementById('btnSaveRecurso').textContent = 'Guardar';
+      setTimeout(()=>document.getElementById('rTitle').focus(),350);
+    } else {
+      document.getElementById('gTitle').value = '';
+      document.getElementById('gUrl').value = '';
+      document.getElementById('gGrade').value = 'all';
+      document.getElementById('errJuego').classList.remove('show');
+      document.getElementById('btnSaveJuego').disabled = false;
+      document.getElementById('btnSaveJuego').textContent = 'Guardar';
+      selectedEmoji = '🎮';
+      document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+      document.querySelector('.emoji-opt')?.classList.add('selected');
+      setTimeout(()=>document.getElementById('gTitle').focus(),350);
+    }
+  }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeModalOutside(e, id) { if(e.target===document.getElementById(id)) closeModal(id); }
+
+  function selectEmoji(el, emoji) {
+    selectedEmoji = emoji;
+    document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ===== GUARDAR RECURSO =====
+  async function saveRecurso() {
+    const title = document.getElementById('rTitle').value.trim();
+    const url   = document.getElementById('rUrl').value.trim();
+    const type  = document.getElementById('rType').value;
+    const grade = document.getElementById('rGrade').value;
+    const err   = document.getElementById('errRecurso');
+    err.classList.remove('show');
+
+    if (!title) { err.textContent='Escribe un título.'; err.classList.add('show'); return; }
+    if (!url || !url.startsWith('http')) { err.textContent='Pega un enlace válido (https://...).'; err.classList.add('show'); return; }
+
+    const btn = document.getElementById('btnSaveRecurso');
+    btn.disabled=true; btn.textContent='Guardando...';
+
+    try {
+      const data = { title, url, type, grade, uploadedBy: SESSION.name, createdBy: SESSION.uid, createdAt: new Date().toISOString() };
+      const ref = await window._addDoc(window._collection(window._db,'resources'), data);
+      allResources.unshift({id:ref.id,...data});
+      closeModal('modalRecurso');
+      renderResources();
+      showToast('📁 Recurso agregado','success');
+    } catch(e) {
+      err.textContent='Error al guardar.'; err.classList.add('show');
+      btn.disabled=false; btn.textContent='Guardar';
+    }
+  }
+
+  // ===== GUARDAR JUEGO =====
+  async function saveJuego() {
+    const title = document.getElementById('gTitle').value.trim();
+    const url   = document.getElementById('gUrl').value.trim();
+    const grade = document.getElementById('gGrade').value;
+    const err   = document.getElementById('errJuego');
+    err.classList.remove('show');
+
+    if (!title) { err.textContent='Escribe el nombre del juego.'; err.classList.add('show'); return; }
+    if (!url || !url.startsWith('http')) { err.textContent='Pega un enlace válido (https://...).'; err.classList.add('show'); return; }
+
+    const btn = document.getElementById('btnSaveJuego');
+    btn.disabled=true; btn.textContent='Guardando...';
+
+    try {
+      const data = { title, url, grade, emoji: selectedEmoji, uploadedBy: SESSION.name, createdBy: SESSION.uid, createdAt: new Date().toISOString() };
+      const ref = await window._addDoc(window._collection(window._db,'games'), data);
+      allGames.unshift({id:ref.id,...data});
+      closeModal('modalJuego');
+      renderGames();
+      showToast('🎮 Juego agregado','success');
+    } catch(e) {
+      err.textContent='Error al guardar.'; err.classList.add('show');
+      btn.disabled=false; btn.textContent='Guardar';
+    }
+  }
+
+  // ===== ELIMINAR =====
+  function askDelete(id, col, title) {
+    deleteTargetId=id; deleteTargetCol=col;
+    document.getElementById('confirmText').textContent = '¿Eliminar "'+title+'"?';
+    document.getElementById('confirmOverlay').classList.add('open');
+  }
+  function closeConfirm() { deleteTargetId=null; deleteTargetCol=null; document.getElementById('confirmOverlay').classList.remove('open'); }
+
+  async function confirmDelete() {
+    if(!deleteTargetId) return;
+    closeConfirm();
+    try {
+      await window._deleteDoc(window._doc(window._db, deleteTargetCol, deleteTargetId));
+      if (deleteTargetCol==='resources') allResources=allResources.filter(r=>r.id!==deleteTargetId);
+      else allGames=allGames.filter(g=>g.id!==deleteTargetId);
+      deleteTargetId=null; deleteTargetCol=null;
+      renderCurrent();
+      showToast('🗑️ Eliminado','success');
+    } catch(e) { showToast('Error al eliminar.','error'); }
+  }
+
+  // ===== UTILS =====
+  function showToast(msg,type='success') {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className='toast show '+type;
+    setTimeout(()=>t.className='toast',3200);
+  }
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+</script>
+</body>
+</html>
