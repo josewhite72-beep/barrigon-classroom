@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Estudiantes · Barrigón Classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1923;
+    --bg2: #162030;
+    --bg3: #1e2d40;
+    --card: #1a2a3a;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0f4f8;
+    --muted: #7a9ab8;
+    --purple: #7c5cbf;
+    --purple-light: #9b7de0;
+    --blue: #2e7de9;
+    --blue-light: #5b9ef7;
+    --teal: #1a9e7a;
+    --teal-light: #2ecfa0;
+    --amber: #d4860a;
+    --amber-light: #f5a623;
+    --coral: #d94f3d;
+    --green: #2d9e5a;
+    --green-light: #5ae090;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== FONDO ===== */
+  .bg-orbs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.12; animation:drift 20s ease-in-out infinite; }
+  .orb1 { width:400px; height:400px; background:#2e7de9; top:-100px; left:-100px; animation-delay:0s; }
+  .orb2 { width:300px; height:300px; background:#1a9e7a; bottom:-60px; right:-60px; animation-delay:-8s; }
+  @keyframes drift {
+    0%,100% { transform:translate(0,0) scale(1); }
+    50% { transform:translate(20px,-20px) scale(1.05); }
+  }
+
+  /* ===== LAYOUT ===== */
+  .container {
+    position:relative; z-index:1;
+    width:100%; max-width:480px;
+    margin:0 auto;
+    padding:0 16px 60px;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    padding: 50px 0 24px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .back-btn {
+    background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:10px; width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:18px;
+    cursor:pointer; transition:all 0.2s; text-decoration:none;
+    flex-shrink:0;
+  }
+  .back-btn:hover { color:var(--text); border-color:var(--muted); }
+  .header-text h1 {
+    font-family:'Nunito', sans-serif;
+    font-size:22px; font-weight:900;
+  }
+  .header-text p { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  /* ===== FILTRO DE GRADO ===== */
+  .filter-section { margin-bottom:20px; }
+  .filter-label {
+    font-family:'Nunito', sans-serif;
+    font-size:11px; font-weight:700;
+    letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--muted); margin-bottom:10px; display:block;
+  }
+  .grade-scroll {
+    display:flex; gap:8px; overflow-x:auto;
+    padding-bottom:4px;
+    scrollbar-width:none;
+  }
+  .grade-scroll::-webkit-scrollbar { display:none; }
+  .grade-chip {
+    padding:7px 14px;
+    background:var(--bg3);
+    border:1.5px solid var(--border);
+    border-radius:20px;
+    font-family:'Nunito', sans-serif;
+    font-size:13px; font-weight:700;
+    color:var(--muted);
+    cursor:pointer; transition:all 0.15s;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .grade-chip.selected {
+    background:rgba(26,158,122,0.2);
+    border-color:var(--teal-light);
+    color:var(--teal-light);
+  }
+
+  /* ===== STATS BAR ===== */
+  .stats-bar {
+    background:var(--card);
+    border:1.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px 18px;
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .stat { text-align:center; }
+  .stat-num {
+    font-family:'Nunito', sans-serif;
+    font-size:22px; font-weight:900;
+    color:var(--teal-light);
+    display:block;
+  }
+  .stat-label { font-size:11px; color:var(--muted); }
+  .stat-divider { width:1px; height:32px; background:var(--border); }
+
+  /* ===== BOTÓN NUEVO ===== */
+  .btn-new {
+    width:100%;
+    padding:15px;
+    background:linear-gradient(135deg, var(--teal), #0e7a5c);
+    border:none; border-radius:var(--radius-sm);
+    color:#fff; font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:800;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-bottom:20px;
+    box-shadow:0 4px 20px rgba(26,158,122,0.3);
+    letter-spacing:0.3px;
+  }
+  .btn-new:active { transform:scale(0.98); }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position:fixed; inset:0; z-index:50;
+    background:rgba(10,16,24,0.85);
+    backdrop-filter:blur(6px);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.25s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal {
+    background:var(--bg2);
+    border:1.5px solid var(--border);
+    border-radius:24px 24px 0 0;
+    padding:28px 20px 40px;
+    width:100%; max-width:480px;
+    transform:translateY(40px);
+    transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .modal-overlay.open .modal { transform:translateY(0); }
+  .modal-handle {
+    width:36px; height:4px;
+    background:var(--border);
+    border-radius:2px;
+    margin:0 auto 20px;
+  }
+  .modal h3 {
+    font-family:'Nunito', sans-serif;
+    font-size:18px; font-weight:900;
+    margin-bottom:20px;
+  }
+  .field { margin-bottom:16px; }
+  .field label {
+    display:block;
+    font-size:11px; font-weight:700;
+    color:var(--muted); letter-spacing:0.8px;
+    text-transform:uppercase;
+    margin-bottom:7px;
+    font-family:'Nunito', sans-serif;
+  }
+  .field input, .field select {
+    width:100%;
+    background:var(--bg3);
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:13px 16px;
+    color:var(--text);
+    font-size:16px;
+    font-family:'Nunito Sans', sans-serif;
+    outline:none;
+    transition:border-color 0.2s;
+    -webkit-appearance:none;
+  }
+  .field input:focus, .field select:focus { border-color:var(--teal); }
+  .field select option { background:var(--bg3); }
+
+  .pin-row {
+    display:flex; gap:10px; align-items:center;
+  }
+  .pin-row input { flex:1; letter-spacing:6px; font-family:'Nunito',sans-serif; font-weight:700; font-size:18px; text-align:center; }
+  .btn-gen-pin {
+    background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:13px 14px;
+    color:var(--teal-light); font-size:18px;
+    cursor:pointer; transition:all 0.2s; flex-shrink:0;
+  }
+  .btn-gen-pin:active { transform:scale(0.93); }
+
+  .modal-actions { display:flex; gap:10px; margin-top:20px; }
+  .btn-cancel {
+    flex:1; padding:14px;
+    background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    color:var(--muted); font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:700;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-save {
+    flex:2; padding:14px;
+    background:linear-gradient(135deg, var(--teal), #0e7a5c);
+    border:none; border-radius:var(--radius-sm);
+    color:#fff; font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:800;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-save:active, .btn-cancel:active { transform:scale(0.97); }
+
+  .error-msg {
+    background:rgba(217,79,61,0.15);
+    border:1px solid rgba(217,79,61,0.3);
+    border-radius:var(--radius-sm);
+    padding:10px 14px;
+    font-size:12px; color:#ff7b6b;
+    margin-bottom:12px;
+    display:none;
+  }
+  .error-msg.show { display:block; }
+
+  /* ===== LISTA DE ESTUDIANTES ===== */
+  .student-list { display:flex; flex-direction:column; gap:10px; }
+
+  .student-card {
+    background:var(--card);
+    border:1.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    display:flex; align-items:center; gap:14px;
+    animation:slideIn 0.25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(8px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  .student-avatar {
+    width:42px; height:42px; border-radius:12px;
+    background:linear-gradient(135deg, var(--teal), #0e7a5c);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nunito', sans-serif; font-size:18px; font-weight:900;
+    color:#fff; flex-shrink:0;
+    text-transform:uppercase;
+  }
+
+  .student-info { flex:1; min-width:0; }
+  .student-name {
+    font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:800;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .student-grade {
+    font-size:11px; color:var(--muted); margin-top:2px;
+  }
+
+  .pin-badge {
+    display:flex; align-items:center; gap:6px;
+    background:var(--bg3);
+    border:1.5px solid var(--border);
+    border-radius:8px;
+    padding:6px 10px;
+    cursor:pointer; transition:all 0.15s;
+    flex-shrink:0;
+  }
+  .pin-badge:active { transform:scale(0.95); }
+  .pin-value {
+    font-family:'Nunito', sans-serif;
+    font-size:16px; font-weight:900;
+    color:var(--teal-light);
+    letter-spacing:3px;
+    min-width:44px; text-align:center;
+  }
+  .pin-value.hidden-pin { letter-spacing:5px; color:var(--muted); font-size:12px; }
+  .pin-eye { font-size:14px; color:var(--muted); }
+
+  .btn-delete {
+    background:none; border:none;
+    color:var(--muted); font-size:18px;
+    cursor:pointer; padding:6px;
+    border-radius:8px; transition:all 0.2s;
+    flex-shrink:0;
+  }
+  .btn-delete:hover { color:#ff7b6b; background:rgba(217,79,61,0.1); }
+
+  /* ===== BOTONES ACCIÓN ===== */
+  .action-row {
+    display:flex; gap:10px; margin-bottom:20px;
+  }
+  .btn-new { flex:1; margin-bottom:0; }
+  .btn-import {
+    flex:1; padding:15px;
+    background:var(--bg3);
+    border:1.5px solid rgba(46,125,233,0.35);
+    border-radius:var(--radius-sm);
+    color:var(--blue-light); font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:800;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    letter-spacing:0.3px;
+  }
+  .btn-import:active { transform:scale(0.98); }
+
+  /* ===== MODAL CSV ===== */
+  .csv-modal-overlay {
+    position:fixed; inset:0; z-index:55;
+    background:rgba(10,16,24,0.88);
+    backdrop-filter:blur(6px);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.25s;
+  }
+  .csv-modal-overlay.open { opacity:1; pointer-events:all; }
+  .csv-modal {
+    background:var(--bg2);
+    border:1.5px solid var(--border);
+    border-radius:24px 24px 0 0;
+    padding:28px 20px 44px;
+    width:100%; max-width:480px;
+    transform:translateY(40px);
+    transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-height:90vh; overflow-y:auto;
+  }
+  .csv-modal-overlay.open .csv-modal { transform:translateY(0); }
+
+  /* Drop zone */
+  .drop-zone {
+    border:2px dashed rgba(46,125,233,0.35);
+    border-radius:var(--radius);
+    padding:32px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:all 0.2s;
+    background:rgba(46,125,233,0.04);
+    margin-bottom:16px;
+  }
+  .drop-zone.drag-over {
+    border-color:var(--blue-light);
+    background:rgba(46,125,233,0.1);
+  }
+  .drop-icon { font-size:36px; margin-bottom:10px; }
+  .drop-zone h4 {
+    font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:800;
+    color:var(--blue-light); margin-bottom:4px;
+  }
+  .drop-zone p { font-size:12px; color:var(--muted); }
+  .drop-zone input[type="file"] { display:none; }
+
+  /* Formato hint */
+  .format-hint {
+    background:var(--bg3);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:12px 14px;
+    margin-bottom:16px;
+  }
+  .format-hint p {
+    font-size:11px; color:var(--muted); margin-bottom:6px;
+  }
+  .format-hint code {
+    display:block;
+    font-family:monospace; font-size:12px;
+    color:var(--teal-light); line-height:1.7;
+    white-space:pre;
+  }
+
+  /* Preview tabla */
+  .preview-section { display:none; }
+  .preview-section.show { display:block; }
+  .preview-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .preview-header h4 {
+    font-family:'Nunito', sans-serif;
+    font-size:14px; font-weight:800;
+  }
+  .preview-count {
+    font-size:12px; color:var(--muted);
+  }
+  .preview-count span { color:var(--teal-light); font-weight:700; }
+  .preview-count .err-count { color:#ff7b6b; }
+
+  .preview-list {
+    display:flex; flex-direction:column; gap:6px;
+    max-height:260px; overflow-y:auto;
+    margin-bottom:14px;
+    padding-right:2px;
+  }
+  .preview-row {
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg3);
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:10px 12px;
+    font-size:13px;
+  }
+  .preview-row.ok { border-color:rgba(26,158,122,0.25); }
+  .preview-row.warn { border-color:rgba(212,134,10,0.35); background:rgba(212,134,10,0.05); }
+  .preview-row.error { border-color:rgba(217,79,61,0.35); background:rgba(217,79,61,0.05); }
+  .prev-status { font-size:16px; flex-shrink:0; }
+  .prev-name { flex:1; font-family:'Nunito',sans-serif; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .prev-grade { font-size:11px; color:var(--muted); flex-shrink:0; }
+  .prev-pin { font-family:'Nunito',sans-serif; font-weight:800; font-size:14px; color:var(--teal-light); letter-spacing:2px; flex-shrink:0; }
+  .prev-msg { font-size:11px; color:var(--amber-light); flex-shrink:0; }
+  .prev-err { font-size:11px; color:#ff7b6b; }
+
+  .btn-import-confirm {
+    width:100%; padding:15px;
+    background:linear-gradient(135deg, var(--blue), #1a5bc4);
+    border:none; border-radius:var(--radius-sm);
+    color:#fff; font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:800;
+    cursor:pointer; transition:all 0.2s;
+    box-shadow:0 4px 20px rgba(46,125,233,0.3);
+  }
+  .btn-import-confirm:disabled {
+    opacity:0.4; cursor:not-allowed;
+    box-shadow:none;
+  }
+  .btn-import-confirm:not(:disabled):active { transform:scale(0.98); }
+
+  /* Progress bar durante importación */
+  .import-progress {
+    display:none; margin-top:14px;
+  }
+  .import-progress.show { display:block; }
+  .progress-bar-wrap {
+    background:var(--bg3); border-radius:6px; height:6px; overflow:hidden;
+    margin-bottom:6px;
+  }
+  .progress-bar-fill {
+    height:100%; background:linear-gradient(90deg, var(--teal), var(--blue));
+    border-radius:6px; width:0%;
+    transition:width 0.3s;
+  }
+  .progress-label { font-size:12px; color:var(--muted); text-align:center; }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    text-align:center; padding:48px 20px;
+    display:none;
+  }
+  .empty-state.show { display:block; }
+  .empty-icon { font-size:48px; margin-bottom:14px; }
+  .empty-state h3 {
+    font-family:'Nunito', sans-serif;
+    font-size:17px; font-weight:800;
+    margin-bottom:6px;
+  }
+  .empty-state p { font-size:13px; color:var(--muted); }
+
+  /* ===== LOADING / TOAST ===== */
+  .loading-overlay {
+    position:fixed; inset:0; z-index:100;
+    background:var(--bg);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px;
+    transition:opacity 0.4s;
+  }
+  .loading-overlay.hidden { opacity:0; pointer-events:none; }
+  .spinner {
+    width:40px; height:40px;
+    border:3px solid var(--border);
+    border-top-color:var(--teal);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-overlay p { color:var(--muted); font-size:14px; }
+
+  .toast {
+    position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:12px; padding:12px 20px;
+    font-family:'Nunito', sans-serif; font-size:14px; font-weight:700;
+    white-space:nowrap; z-index:200;
+    opacity:0; transition:all 0.3s;
+    pointer-events:none;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.success { border-color:rgba(26,158,122,0.4); color:var(--teal-light); }
+  .toast.error { border-color:rgba(217,79,61,0.4); color:#ff7b6b; }
+
+  /* ===== CONFIRM MODAL ===== */
+  .confirm-overlay {
+    position:fixed; inset:0; z-index:60;
+    background:rgba(10,16,24,0.85);
+    backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.2s;
+  }
+  .confirm-overlay.open { opacity:1; pointer-events:all; }
+  .confirm-box {
+    background:var(--bg2);
+    border:1.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:24px 20px;
+    width:100%; max-width:320px;
+    text-align:center;
+    transform:scale(0.9);
+    transition:transform 0.2s;
+  }
+  .confirm-overlay.open .confirm-box { transform:scale(1); }
+  .confirm-box p {
+    font-family:'Nunito', sans-serif;
+    font-size:15px; font-weight:700;
+    margin-bottom:6px;
+  }
+  .confirm-box span { font-size:13px; color:var(--muted); }
+  .confirm-actions { display:flex; gap:10px; margin-top:20px; }
+  .btn-confirm-cancel {
+    flex:1; padding:12px;
+    background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    color:var(--muted); font-family:'Nunito', sans-serif;
+    font-size:14px; font-weight:700; cursor:pointer;
+  }
+  .btn-confirm-delete {
+    flex:1; padding:12px;
+    background:rgba(217,79,61,0.2);
+    border:1.5px solid rgba(217,79,61,0.4);
+    border-radius:var(--radius-sm);
+    color:#ff7b6b; font-family:'Nunito', sans-serif;
+    font-size:14px; font-weight:800; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Cargando estudiantes...</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== MODAL NUEVO ESTUDIANTE ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>➕ Nuevo estudiante</h3>
+    <div class="error-msg" id="formError"></div>
+    <div class="field">
+      <label>Nombre completo</label>
+      <input type="text" id="inputName" placeholder="Ej: María García" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Grado</label>
+      <select id="inputGrade">
+        <option value="">-- Selecciona --</option>
+        <option value="prek">PreK</option>
+        <option value="kinder">Kinder</option>
+        <option value="1ro">1° Grado</option>
+        <option value="2do">2° Grado</option>
+        <option value="3ro">3° Grado</option>
+        <option value="4to">4° Grado</option>
+        <option value="5to">5° Grado</option>
+        <option value="6to">6° Grado</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>PIN de acceso (4 dígitos)</label>
+      <div class="pin-row">
+        <input type="tel" id="inputPin" placeholder="1234" maxlength="4">
+        <button class="btn-gen-pin" onclick="generatePin()" title="Generar PIN aleatorio">🎲</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveStudent()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CONFIRMAR ELIMINACIÓN ===== -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div style="font-size:36px;margin-bottom:12px;">🗑️</div>
+    <p id="confirmName">¿Eliminar a este estudiante?</p>
+    <span>Esta acción no se puede deshacer.</span>
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-confirm-delete" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<div class="container">
+  <div class="page-header">
+    <a class="back-btn" href="barrigon-classroom.html">←</a>
+    <div class="header-text">
+      <h1>👥 Mis Estudiantes</h1>
+      <p>CEBG Barrigón · Gestión de acceso</p>
+    </div>
+  </div>
+
+  <!-- Filtro de grado -->
+  <div class="filter-section">
+    <span class="filter-label">Filtrar por grado</span>
+    <div class="grade-scroll">
+      <div class="grade-chip selected" onclick="filterGrade(this,'all')">Todos</div>
+      <div class="grade-chip" onclick="filterGrade(this,'prek')">PreK</div>
+      <div class="grade-chip" onclick="filterGrade(this,'kinder')">Kinder</div>
+      <div class="grade-chip" onclick="filterGrade(this,'1ro')">1°</div>
+      <div class="grade-chip" onclick="filterGrade(this,'2do')">2°</div>
+      <div class="grade-chip" onclick="filterGrade(this,'3ro')">3°</div>
+      <div class="grade-chip" onclick="filterGrade(this,'4to')">4°</div>
+      <div class="grade-chip" onclick="filterGrade(this,'5to')">5°</div>
+      <div class="grade-chip" onclick="filterGrade(this,'6to')">6°</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-num" id="statTotal">—</span>
+      <div class="stat-label">Total</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <span class="stat-num" id="statGrade">—</span>
+      <div class="stat-label">En este grado</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <span class="stat-num" id="statGrades">—</span>
+      <div class="stat-label">Grados activos</div>
+    </div>
+  </div>
+
+  <!-- Botones acción -->
+  <div class="action-row">
+    <button class="btn-new" onclick="openModal()">＋ Agregar</button>
+    <button class="btn-import" onclick="openCsvModal()">📂 Importar CSV</button>
+  </div>
+
+  <!-- Lista -->
+  <div class="student-list" id="studentList"></div>
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">🎒</div>
+    <h3>Sin estudiantes aún</h3>
+    <p>Agrega tu primer estudiante con el botón de arriba</p>
+  </div>
+</div>
+
+<!-- ===== MODAL IMPORTAR CSV ===== -->
+<div class="csv-modal-overlay" id="csvModalOverlay" onclick="closeCsvOutside(event)">
+  <div class="csv-modal">
+    <div class="modal-handle"></div>
+    <h3>📂 Importar desde Excel / CSV</h3>
+
+    <!-- Formato -->
+    <div class="format-hint">
+      <p>El archivo debe tener estas columnas (la primera fila es el encabezado):</p>
+      <code>nombre,grado,pin
+María García,1ro,1234
+Juan Pérez,2do,
+Ana López,kinder,5678</code>
+      <p style="margin-top:8px;">• <b>pin</b> es opcional — si está vacío se genera automáticamente<br>
+      • Separador: coma <code style="display:inline">,</code> o punto y coma <code style="display:inline">;</code><br>
+      • Grados aceptados: PreK, Kinder, 1°, 1ro, Primero, 1… (flexible)</p>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="drop-zone" id="dropZone"
+      ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)"
+      onclick="document.getElementById('csvFileInput').click()">
+      <input type="file" id="csvFileInput" accept=".csv,.txt" onchange="fileSelected(event)">
+      <div class="drop-icon">📄</div>
+      <h4>Toca para seleccionar archivo</h4>
+      <p>O arrastra un .csv aquí · Excel: Guardar como CSV UTF-8</p>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-section" id="previewSection">
+      <div class="preview-header">
+        <h4>Vista previa</h4>
+        <div class="preview-count">
+          <span id="prevOkCount">0</span> ok
+          &nbsp;·&nbsp;
+          <span class="err-count" id="prevErrCount">0</span> errores
+        </div>
+      </div>
+      <div class="preview-list" id="previewList"></div>
+
+      <div class="import-progress" id="importProgress">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-label" id="progressLabel">Importando...</div>
+      </div>
+
+      <button class="btn-import-confirm" id="btnImportConfirm" onclick="runImport()">
+        ⬆️ Importar estudiantes válidos
+      </button>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-cancel" style="flex:1" onclick="closeCsvModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, deleteDoc, getDocs, doc, query, where, orderBy }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJZFP_BZa5YR4GqDqYi938I15FxkUFsjE",
+    authDomain: "barrigon-classroom.firebaseapp.com",
+    projectId: "barrigon-classroom",
+    storageBucket: "barrigon-classroom.firebasestorage.app",
+    messagingSenderId: "987121913715",
+    appId: "1:987121913715:web:4d61a24e8facf6766bff06"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window._db = db;
+  window._collection = collection;
+  window._addDoc = addDoc;
+  window._deleteDoc = deleteDoc;
+  window._getDocs = getDocs;
+  window._doc = doc;
+  window._query = query;
+  window._where = where;
+  window._orderBy = orderBy;
+
+  // Cargar al inicio
+  window.addEventListener('load', () => {
+    loadStudents();
+  });
+</script>
+
+<script>
+  let allStudents = [];
+  let currentFilter = 'all';
+  let deleteTargetId = null;
+  let pinVisible = {}; // trackea qué PINs están visibles
+
+  const GRADE_LABELS = {
+    prek:'PreK', kinder:'Kinder',
+    '1ro':'1° Grado','2do':'2° Grado','3ro':'3° Grado',
+    '4to':'4° Grado','5to':'5° Grado','6to':'6° Grado'
+  };
+
+  // ===== CARGAR ESTUDIANTES =====
+  async function loadStudents() {
+    try {
+      const snap = await window._getDocs(
+        window._query(
+          window._collection(window._db, 'users'),
+          window._where('role', '==', 'estudiante')
+        )
+      );
+      allStudents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      allStudents.sort((a,b) => a.name?.localeCompare(b.name));
+      renderList();
+    } catch(e) {
+      showToast('Error al cargar. Verifica conexión.', 'error');
+    } finally {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+  }
+
+  // ===== RENDER =====
+  function renderList() {
+    const list = document.getElementById('studentList');
+    const empty = document.getElementById('emptyState');
+    const filtered = currentFilter === 'all'
+      ? allStudents
+      : allStudents.filter(s => s.grade === currentFilter);
+
+    // Stats
+    const grades = new Set(allStudents.map(s => s.grade)).size;
+    document.getElementById('statTotal').textContent = allStudents.length;
+    document.getElementById('statGrade').textContent =
+      currentFilter === 'all' ? allStudents.length : filtered.length;
+    document.getElementById('statGrades').textContent = grades;
+
+    if (filtered.length === 0) {
+      list.innerHTML = '';
+      empty.classList.add('show');
+      return;
+    }
+    empty.classList.remove('show');
+
+    list.innerHTML = filtered.map(s => `
+      <div class="student-card" id="card-${s.id}">
+        <div class="student-avatar">${(s.name||'?').charAt(0)}</div>
+        <div class="student-info">
+          <div class="student-name">${escHtml(s.name || 'Sin nombre')}</div>
+          <div class="student-grade">${GRADE_LABELS[s.grade] || s.grade || '—'}</div>
+        </div>
+        <div class="pin-badge" onclick="togglePin('${s.id}','${escHtml(s.pin||'')}')">
+          <span class="pin-eye">👁</span>
+          <span class="pin-value ${pinVisible[s.id]?'':'hidden-pin'}" id="pin-${s.id}">
+            ${pinVisible[s.id] ? (s.pin||'—') : '••••'}
+          </span>
+        </div>
+        <button class="btn-delete" onclick="askDelete('${s.id}','${escHtml(s.name||'')}')">🗑️</button>
+      </div>
+    `).join('');
+  }
+
+  // ===== FILTRO =====
+  function filterGrade(el, grade) {
+    document.querySelectorAll('.grade-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    currentFilter = grade;
+    renderList();
+  }
+
+  // ===== VER PIN =====
+  function togglePin(id, pin) {
+    pinVisible[id] = !pinVisible[id];
+    const el = document.getElementById('pin-'+id);
+    if (pinVisible[id]) {
+      el.textContent = pin || '—';
+      el.classList.remove('hidden-pin');
+      // Copiar al portapapeles
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(pin).then(() => showToast('PIN copiado: ' + pin, 'success'));
+      }
+    } else {
+      el.textContent = '••••';
+      el.classList.add('hidden-pin');
+    }
+  }
+
+  // ===== MODAL =====
+  function openModal() {
+    document.getElementById('inputName').value = '';
+    document.getElementById('inputGrade').value = '';
+    document.getElementById('inputPin').value = '';
+    document.getElementById('formError').classList.remove('show');
+    generatePin();
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('inputName').focus(), 350);
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function generatePin() {
+    const pin = String(Math.floor(1000 + Math.random() * 9000));
+    document.getElementById('inputPin').value = pin;
+  }
+
+  // ===== GUARDAR =====
+  async function saveStudent() {
+    const name = document.getElementById('inputName').value.trim();
+    const grade = document.getElementById('inputGrade').value;
+    const pin = document.getElementById('inputPin').value.trim();
+    const err = document.getElementById('formError');
+    err.classList.remove('show');
+
+    if (!name) { err.textContent = 'Escribe el nombre del estudiante.'; err.classList.add('show'); return; }
+    if (!grade) { err.textContent = 'Selecciona el grado.'; err.classList.add('show'); return; }
+    if (!/^\d{4}$/.test(pin)) { err.textContent = 'El PIN debe tener exactamente 4 dígitos.'; err.classList.add('show'); return; }
+
+    // Verificar PIN duplicado en mismo grado
+    const dup = allStudents.find(s => s.pin === pin && s.grade === grade);
+    if (dup) { err.textContent = `El PIN ${pin} ya está en uso en ${GRADE_LABELS[grade]}. Genera otro.`; err.classList.add('show'); return; }
+
+    try {
+      const ref = await window._addDoc(window._collection(window._db, 'users'), {
+        name, grade, pin, role: 'estudiante',
+        createdAt: new Date().toISOString()
+      });
+      allStudents.push({ id: ref.id, name, grade, pin, role: 'estudiante' });
+      allStudents.sort((a,b) => a.name.localeCompare(b.name));
+      closeModal();
+      renderList();
+      showToast('✅ ' + name + ' agregado', 'success');
+    } catch(e) {
+      err.textContent = 'Error al guardar. Intenta de nuevo.';
+      err.classList.add('show');
+    }
+  }
+
+  // ===== ELIMINAR =====
+  function askDelete(id, name) {
+    deleteTargetId = id;
+    document.getElementById('confirmName').textContent = '¿Eliminar a ' + name + '?';
+    document.getElementById('confirmOverlay').classList.add('open');
+  }
+
+  function closeConfirm() {
+    deleteTargetId = null;
+    document.getElementById('confirmOverlay').classList.remove('open');
+  }
+
+  async function confirmDelete() {
+    if (!deleteTargetId) return;
+    closeConfirm();
+    try {
+      await window._deleteDoc(window._doc(window._db, 'users', deleteTargetId));
+      const idx = allStudents.findIndex(s => s.id === deleteTargetId);
+      const name = allStudents[idx]?.name || 'Estudiante';
+      if (idx > -1) allStudents.splice(idx, 1);
+      deleteTargetId = null;
+      renderList();
+      showToast('🗑️ ' + name + ' eliminado', 'success');
+    } catch(e) {
+      showToast('Error al eliminar.', 'error');
+    }
+  }
+
+  // ===== IMPORTAR CSV =====
+
+  // Mapa flexible de grados
+  const GRADE_MAP = {
+    'prek':['prek','pre-k','pre k','prekinder','prekínder','pre-kinder','pre kinder'],
+    'kinder':['kinder','kindergarten','k'],
+    '1ro':['1ro','1°','1','primero','primer grado','1er','1er grado','first'],
+    '2do':['2do','2°','2','segundo','segundo grado','2do grado','second'],
+    '3ro':['3ro','3°','3','tercero','tercer grado','3ro grado','third'],
+    '4to':['4to','4°','4','cuarto','cuarto grado','4to grado','fourth'],
+    '5to':['5to','5°','5','quinto','quinto grado','5to grado','fifth'],
+    '6to':['6to','6°','6','sexto','sexto grado','6to grado','sixth'],
+  };
+
+  function normalizeGrade(raw) {
+    if (!raw) return null;
+    const s = raw.trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // quitar tildes
+    for (const [key, variants] of Object.entries(GRADE_MAP)) {
+      if (variants.includes(s)) return key;
+    }
+    return null;
+  }
+
+  function parseCSV(text) {
+    // Quitar BOM Excel
+    text = text.replace(/^\uFEFF/, '');
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return [];
+
+    // Detectar separador
+    const firstLine = lines[0];
+    const sep = firstLine.includes(';') ? ';' : ',';
+
+    // Leer encabezados
+    const headers = firstLine.split(sep).map(h =>
+      h.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')
+    );
+    const iName  = headers.findIndex(h => ['nombre','name','alumno','estudiante'].includes(h));
+    const iGrade = headers.findIndex(h => ['grado','grade','nivel','curso'].includes(h));
+    const iPin   = headers.findIndex(h => ['pin','clave','codigo','contrasena','password'].includes(h));
+
+    if (iName < 0 || iGrade < 0) return [{_error:'No se encontraron columnas "nombre" y "grado"'}];
+
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(sep).map(c => c.trim().replace(/^"|"$/g,'').trim());
+      const name  = cols[iName]  || '';
+      const gradeRaw = cols[iGrade] || '';
+      const pinRaw   = iPin >= 0 ? (cols[iPin] || '') : '';
+
+      if (!name) continue; // fila vacía
+
+      const grade = normalizeGrade(gradeRaw);
+      let pin = pinRaw.replace(/\D/g,'').slice(0,4);
+      let autoPin = false;
+
+      if (!pin || pin.length !== 4) {
+        pin = genUniquePin(grade, rows);
+        autoPin = true;
+      }
+
+      let status = 'ok', msg = '';
+      if (!grade) { status = 'error'; msg = 'Grado inválido: "' + gradeRaw + '"'; }
+      else {
+        // Duplicado en filas del preview
+        const dup = rows.find(r => r.pin === pin && r.grade === grade && r.status !== 'error');
+        if (dup) { pin = genUniquePin(grade, rows); autoPin = true; }
+        // Duplicado con existentes en Firestore
+        const dupEx = allStudents.find(s => s.pin === pin && s.grade === grade);
+        if (dupEx) { pin = genUniquePin(grade, rows); autoPin = true; }
+      }
+      if (autoPin && status === 'ok') { status = 'warn'; msg = 'PIN auto: ' + pin; }
+
+      rows.push({ name, grade, gradeRaw, pin, status, msg, line: i+1 });
+    }
+    return rows;
+  }
+
+  function genUniquePin(grade, previewRows) {
+    let pin, tries = 0;
+    do {
+      pin = String(Math.floor(1000 + Math.random() * 9000));
+      tries++;
+    } while (tries < 100 && (
+      allStudents.find(s => s.pin === pin && s.grade === grade) ||
+      previewRows.find(r => r.pin === pin && r.grade === grade)
+    ));
+    return pin;
+  }
+
+  let csvRows = [];
+
+  function openCsvModal() {
+    csvRows = [];
+    document.getElementById('previewSection').classList.remove('show');
+    document.getElementById('csvFileInput').value = '';
+    document.getElementById('csvModalOverlay').classList.add('open');
+  }
+
+  function closeCsvModal() {
+    document.getElementById('csvModalOverlay').classList.remove('open');
+  }
+
+  function closeCsvOutside(e) {
+    if (e.target === document.getElementById('csvModalOverlay')) closeCsvModal();
+  }
+
+  function dragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+  function dragLeave()  { document.getElementById('dropZone').classList.remove('drag-over'); }
+  function dropFile(e)  { e.preventDefault(); dragLeave(); readFile(e.dataTransfer.files[0]); }
+  function fileSelected(e) { readFile(e.target.files[0]); }
+
+  function readFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => processCSV(e.target.result);
+    // Intentar UTF-8, si falla usar latin-1 (Excel legacy)
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function processCSV(text) {
+    csvRows = parseCSV(text);
+
+    if (csvRows.length === 1 && csvRows[0]._error) {
+      showToast(csvRows[0]._error, 'error');
+      return;
+    }
+
+    const okCount  = csvRows.filter(r => r.status !== 'error').length;
+    const errCount = csvRows.filter(r => r.status === 'error').length;
+
+    document.getElementById('prevOkCount').textContent  = okCount;
+    document.getElementById('prevErrCount').textContent = errCount;
+
+    const GRADE_LABELS_LOCAL = {
+      prek:'PreK', kinder:'Kinder',
+      '1ro':'1°','2do':'2°','3ro':'3°','4to':'4°','5to':'5°','6to':'6°'
+    };
+
+    document.getElementById('previewList').innerHTML = csvRows.map(r => {
+      if (r.status === 'error') {
+        return `<div class="preview-row error">
+          <span class="prev-status">❌</span>
+          <span class="prev-name">${escHtml(r.name)}</span>
+          <span class="prev-err">${escHtml(r.msg)}</span>
+        </div>`;
+      }
+      if (r.status === 'warn') {
+        return `<div class="preview-row warn">
+          <span class="prev-status">⚠️</span>
+          <span class="prev-name">${escHtml(r.name)}</span>
+          <span class="prev-grade">${GRADE_LABELS_LOCAL[r.grade]||r.grade}</span>
+          <span class="prev-pin">${r.pin}</span>
+          <span class="prev-msg">auto</span>
+        </div>`;
+      }
+      return `<div class="preview-row ok">
+        <span class="prev-status">✅</span>
+        <span class="prev-name">${escHtml(r.name)}</span>
+        <span class="prev-grade">${GRADE_LABELS_LOCAL[r.grade]||r.grade}</span>
+        <span class="prev-pin">${r.pin}</span>
+      </div>`;
+    }).join('');
+
+    document.getElementById('btnImportConfirm').disabled = okCount === 0;
+    document.getElementById('btnImportConfirm').textContent =
+      `⬆️ Importar ${okCount} estudiante${okCount !== 1 ? 's' : ''}`;
+    document.getElementById('previewSection').classList.add('show');
+    document.getElementById('importProgress').classList.remove('show');
+  }
+
+  async function runImport() {
+    const valid = csvRows.filter(r => r.status !== 'error');
+    if (valid.length === 0) return;
+
+    const btn = document.getElementById('btnImportConfirm');
+    btn.disabled = true;
+    document.getElementById('importProgress').classList.add('show');
+
+    let done = 0, errors = 0;
+    const fill  = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+
+    for (const row of valid) {
+      try {
+        const ref = await window._addDoc(window._collection(window._db, 'users'), {
+          name: row.name, grade: row.grade, pin: row.pin,
+          role: 'estudiante', createdAt: new Date().toISOString()
+        });
+        allStudents.push({ id: ref.id, name: row.name, grade: row.grade, pin: row.pin, role: 'estudiante' });
+        done++;
+      } catch(e) { errors++; }
+
+      const pct = Math.round(((done + errors) / valid.length) * 100);
+      fill.style.width = pct + '%';
+      label.textContent = `Importando ${done + errors} de ${valid.length}...`;
+    }
+
+    allStudents.sort((a,b) => a.name.localeCompare(b.name));
+    renderList();
+    closeCsvModal();
+
+    const msg = errors === 0
+      ? `✅ ${done} estudiantes importados`
+      : `✅ ${done} importados · ❌ ${errors} fallaron`;
+    showToast(msg, errors === 0 ? 'success' : 'error');
+  }
+
+  // ===== TOAST =====
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  // ===== UTILS =====
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+</script>
+</body>
+</html>

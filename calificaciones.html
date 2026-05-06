@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Calificaciones · Barrigón Classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1923; --bg2: #162030; --bg3: #1e2d40; --card: #1a2a3a;
+    --border: rgba(255,255,255,0.08); --text: #f0f4f8; --muted: #7a9ab8;
+    --blue: #2e7de9; --blue-light: #5b9ef7;
+    --teal: #1a9e7a; --teal-light: #2ecfa0;
+    --amber: #d4860a; --amber-light: #f5a623;
+    --coral: #d94f3d; --coral-light: #ff7b6b;
+    --purple: #7c5cbf; --purple-light: #9b7de0;
+    --green: #2d9e5a; --green-light: #5ae090;
+    --radius: 16px; --radius-sm: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Nunito Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  .bg-orbs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.11; animation:drift 22s ease-in-out infinite; }
+  .orb1 { width:360px; height:360px; background:#d4860a; top:-80px; right:-60px; animation-delay:0s; }
+  .orb2 { width:280px; height:280px; background:#2e7de9; bottom:-60px; left:-40px; animation-delay:-11s; }
+  @keyframes drift { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-15px,20px) scale(1.04);} }
+
+  .container { position:relative; z-index:1; width:100%; max-width:480px; margin:0 auto; padding:0 16px 80px; }
+
+  /* HEADER */
+  .page-header { padding:50px 0 20px; display:flex; align-items:center; gap:14px; }
+  .back-btn {
+    background:var(--bg3); border:1.5px solid var(--border); border-radius:10px;
+    width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:18px; cursor:pointer; text-decoration:none; flex-shrink:0; transition:all 0.2s;
+  }
+  .back-btn:hover { color:var(--text); border-color:var(--muted); }
+  .header-text h1 { font-family:'Nunito',sans-serif; font-size:22px; font-weight:900; }
+  .header-text p { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  .role-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 12px; border-radius:20px;
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; margin-bottom:18px;
+  }
+  .pill-docente { background:rgba(46,125,233,0.15); border:1px solid rgba(46,125,233,0.3); color:var(--blue-light); }
+  .pill-estudiante { background:rgba(212,134,10,0.15); border:1px solid rgba(212,134,10,0.3); color:var(--amber-light); }
+
+  /* PERIODO TABS */
+  .periodo-tabs {
+    display:flex; gap:6px; margin-bottom:18px;
+    background:var(--bg3); border-radius:12px; padding:4px;
+  }
+  .periodo-tab {
+    flex:1; padding:9px 4px; border:none; border-radius:9px;
+    background:transparent; color:var(--muted);
+    font-family:'Nunito',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .periodo-tab.active {
+    background:var(--card); color:var(--amber-light);
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* VISTA DOCENTE — selector estudiante */
+  .docente-controls { margin-bottom:16px; }
+  .field label {
+    display:block; font-size:11px; font-weight:700; color:var(--muted);
+    letter-spacing:0.8px; text-transform:uppercase; margin-bottom:7px;
+    font-family:'Nunito',sans-serif;
+  }
+  .field { margin-bottom:14px; }
+  .field select, .field input {
+    width:100%; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:13px 16px; color:var(--text);
+    font-size:15px; font-family:'Nunito Sans',sans-serif;
+    outline:none; transition:border-color 0.2s; -webkit-appearance:none;
+  }
+  .field select:focus, .field input:focus { border-color:var(--amber); }
+  .field select option { background:var(--bg3); }
+
+  /* PROMEDIO GRANDE */
+  .avg-card {
+    background:var(--card); border:1.5px solid rgba(212,134,10,0.25);
+    border-radius:var(--radius); padding:20px;
+    display:flex; align-items:center; gap:18px; margin-bottom:18px;
+  }
+  .avg-circle {
+    width:72px; height:72px; border-radius:50%; flex-shrink:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border:3px solid var(--amber-light);
+    background:rgba(212,134,10,0.1);
+  }
+  .avg-num { font-family:'Nunito',sans-serif; font-size:24px; font-weight:900; color:var(--amber-light); line-height:1; }
+  .avg-label { font-size:10px; color:var(--muted); }
+  .avg-info h4 { font-family:'Nunito',sans-serif; font-size:15px; font-weight:800; margin-bottom:3px; }
+  .avg-info p { font-size:12px; color:var(--muted); }
+  .avg-badge {
+    margin-left:auto; flex-shrink:0;
+    padding:5px 12px; border-radius:12px;
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:800;
+  }
+  .badge-A { background:rgba(26,158,122,0.2); color:var(--teal-light); border:1px solid rgba(26,158,122,0.3); }
+  .badge-B { background:rgba(46,125,233,0.2); color:var(--blue-light); border:1px solid rgba(46,125,233,0.3); }
+  .badge-C { background:rgba(212,134,10,0.2); color:var(--amber-light); border:1px solid rgba(212,134,10,0.3); }
+  .badge-D { background:rgba(217,79,61,0.2); color:var(--coral-light); border:1px solid rgba(217,79,61,0.3); }
+
+  /* TABLA DE MATERIAS */
+  .subject-table { display:flex; flex-direction:column; gap:8px; }
+
+  .subject-row {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px; animation:slideIn 0.2s ease;
+    position:relative; overflow:hidden;
+  }
+  .subject-row::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:2px 0 0 2px;
+  }
+  .subject-row.grade-A::before { background:var(--teal-light); }
+  .subject-row.grade-B::before { background:var(--blue-light); }
+  .subject-row.grade-C::before { background:var(--amber-light); }
+  .subject-row.grade-D::before { background:var(--coral-light); }
+
+  @keyframes slideIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+  .subj-name { flex:1; font-family:'Nunito',sans-serif; font-size:14px; font-weight:800; }
+  .subj-score {
+    font-family:'Nunito',sans-serif; font-size:20px; font-weight:900;
+    min-width:44px; text-align:right;
+  }
+  .score-A { color:var(--teal-light); }
+  .score-B { color:var(--blue-light); }
+  .score-C { color:var(--amber-light); }
+  .score-D { color:var(--coral-light); }
+  .score-empty { color:var(--muted); font-size:14px; }
+
+  /* Edición de nota (docente) */
+  .subj-input {
+    width:64px; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:8px; padding:6px 8px; color:var(--text);
+    font-family:'Nunito',sans-serif; font-size:18px; font-weight:900;
+    text-align:center; outline:none; transition:border-color 0.2s;
+  }
+  .subj-input:focus { border-color:var(--amber); }
+  .btn-save-score {
+    background:rgba(212,134,10,0.2); border:1.5px solid rgba(212,134,10,0.4);
+    border-radius:8px; padding:6px 10px;
+    color:var(--amber-light); font-family:'Nunito',sans-serif;
+    font-size:12px; font-weight:800; cursor:pointer; transition:all 0.2s; flex-shrink:0;
+  }
+  .btn-save-score:active { transform:scale(0.95); }
+  .btn-saved {
+    background:rgba(26,158,122,0.15); border-color:rgba(26,158,122,0.3);
+    color:var(--teal-light);
+  }
+
+  /* EMPTY */
+  .empty-state { text-align:center; padding:48px 20px; display:none; }
+  .empty-state.show { display:block; }
+  .empty-icon { font-size:48px; margin-bottom:14px; }
+  .empty-state h3 { font-family:'Nunito',sans-serif; font-size:17px; font-weight:800; margin-bottom:6px; }
+  .empty-state p { font-size:13px; color:var(--muted); }
+
+  /* LOADING / TOAST */
+  .loading-overlay {
+    position:fixed; inset:0; z-index:100; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    transition:opacity 0.4s;
+  }
+  .loading-overlay.hidden { opacity:0; pointer-events:none; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--amber); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .loading-overlay p { color:var(--muted); font-size:14px; }
+
+  .toast {
+    position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:12px; padding:12px 20px;
+    font-family:'Nunito',sans-serif; font-size:14px; font-weight:700;
+    white-space:nowrap; z-index:200; opacity:0; transition:all 0.3s; pointer-events:none;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.success { border-color:rgba(26,158,122,0.4); color:var(--teal-light); }
+  .toast.error   { border-color:rgba(217,79,61,0.4); color:var(--coral-light); }
+
+  /* HINT nota */
+  .nota-hint {
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:10px 14px;
+    font-size:11px; color:var(--muted); margin-bottom:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .nota-hint span { font-size:16px; }
+
+  /* Sección grado docente */
+  .section-label {
+    font-family:'Nunito',sans-serif; font-size:11px; font-weight:700;
+    letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--muted); margin-bottom:10px; display:block;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Cargando calificaciones...</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="container">
+  <div class="page-header">
+    <a class="back-btn" href="barrigon-classroom.html">←</a>
+    <div class="header-text">
+      <h1 id="pageTitle">📊 Calificaciones</h1>
+      <p id="pageSubtitle">CEBG Barrigón</p>
+    </div>
+  </div>
+
+  <div id="rolePill"></div>
+
+  <!-- Tabs de período -->
+  <div class="periodo-tabs">
+    <button class="periodo-tab active" onclick="setPeriodo(this,'I')">I Trimestre</button>
+    <button class="periodo-tab" onclick="setPeriodo(this,'II')">II Trimestre</button>
+    <button class="periodo-tab" onclick="setPeriodo(this,'III')">III Trimestre</button>
+    <button class="periodo-tab" onclick="setPeriodo(this,'IV')">IV Trimestre</button>
+  </div>
+
+  <!-- Controles docente -->
+  <div class="docente-controls" id="docenteControls" style="display:none">
+    <div class="field">
+      <label>Grado</label>
+      <select id="selGrade" onchange="onGradeChange()">
+        <option value="">-- Selecciona grado --</option>
+        <option value="prek">PreK</option>
+        <option value="kinder">Kinder</option>
+        <option value="1ro">1° Grado</option>
+        <option value="2do">2° Grado</option>
+        <option value="3ro">3° Grado</option>
+        <option value="4to">4° Grado</option>
+        <option value="5to">5° Grado</option>
+        <option value="6to">6° Grado</option>
+      </select>
+    </div>
+    <div class="field" id="studentFieldWrap" style="display:none">
+      <label>Estudiante</label>
+      <select id="selStudent" onchange="onStudentChange()">
+        <option value="">-- Selecciona estudiante --</option>
+      </select>
+    </div>
+    <div class="nota-hint" id="notaHint" style="display:none">
+      <span>💡</span>
+      <div>Edita la nota y presiona <b>Guardar</b>. Escala: 0–100</div>
+    </div>
+  </div>
+
+  <!-- Promedio -->
+  <div class="avg-card" id="avgCard" style="display:none">
+    <div class="avg-circle">
+      <span class="avg-num" id="avgNum">—</span>
+      <span class="avg-label">promedio</span>
+    </div>
+    <div class="avg-info">
+      <h4 id="avgName">—</h4>
+      <p id="avgGrade">—</p>
+    </div>
+    <div class="avg-badge" id="avgBadge">—</div>
+  </div>
+
+  <!-- Lista de materias -->
+  <span class="section-label" id="sectionLabel" style="display:none">Materias</span>
+  <div class="subject-table" id="subjectTable"></div>
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">📋</div>
+    <h3 id="emptyTitle">Selecciona un estudiante</h3>
+    <p id="emptyMsg">Elige el grado y el estudiante para ver o editar notas</p>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, setDoc, getDocs, doc, query, where, deleteDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJZFP_BZa5YR4GqDqYi938I15FxkUFsjE",
+    authDomain: "barrigon-classroom.firebaseapp.com",
+    projectId: "barrigon-classroom",
+    storageBucket: "barrigon-classroom.firebasestorage.app",
+    messagingSenderId: "987121913715",
+    appId: "1:987121913715:web:4d61a24e8facf6766bff06"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  window._db=db; window._collection=collection; window._addDoc=addDoc;
+  window._setDoc=setDoc; window._getDocs=getDocs; window._doc=doc;
+  window._query=query; window._where=where; window._deleteDoc=deleteDoc;
+  window.addEventListener('load', initPage);
+</script>
+
+<script>
+  // ===== ESTADO =====
+  let SESSION = null;
+  let currentPeriodo = 'I';
+  let allStudents = [];        // solo docente
+  let currentStudentId = null;
+  let currentStudentName = '';
+  let currentGrade = '';
+  let scoresCache = {};        // studentId+periodo -> {subject: {id, score}}
+
+  const MATERIAS = ['Inglés','Español','Matemáticas','Ciencias Naturales','Ciencias Sociales','Arte','Ed. Física','Religión'];
+
+  const GRADE_LABELS = {
+    prek:'PreK', kinder:'Kinder',
+    '1ro':'1° Grado','2do':'2° Grado','3ro':'3° Grado',
+    '4to':'4° Grado','5to':'5° Grado','6to':'6° Grado'
+  };
+
+  function scoreGrade(n) {
+    if (n === null || n === undefined || n === '') return null;
+    n = Number(n);
+    if (n >= 91) return 'A';
+    if (n >= 71) return 'B';
+    if (n >= 51) return 'C';
+    return 'D';
+  }
+
+  // ===== INIT =====
+  function initPage() {
+    try { SESSION = JSON.parse(sessionStorage.getItem('bc_session') || 'null'); } catch(e){}
+    if (!SESSION) {
+      const p = new URLSearchParams(location.search);
+      SESSION = { role: p.get('rol')||'docente', name: p.get('name')||'Docente', grade: p.get('grade')||null, uid: p.get('uid')||'demo' };
+    }
+
+    const r = SESSION.role;
+    document.getElementById('pageSubtitle').textContent = SESSION.name;
+    document.getElementById('rolePill').innerHTML = (r==='docente'||r==='director')
+      ? `<div class="role-pill pill-docente">${r==='director'?'👨‍💼 Director':'👩‍🏫 Docente'}</div>`
+      : `<div class="role-pill pill-estudiante">🎒 ${SESSION.name}</div>`;
+
+    if (r === 'docente' || r === 'director') {
+      document.getElementById('docenteControls').style.display = 'block';
+      document.getElementById('emptyTitle').textContent = 'Selecciona un estudiante';
+      document.getElementById('emptyMsg').textContent = 'Elige el grado y el estudiante para registrar notas';
+      document.getElementById('emptyState').classList.add('show');
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    } else {
+      // Estudiante — cargar sus notas directamente
+      currentStudentId = SESSION.uid;
+      currentStudentName = SESSION.name;
+      currentGrade = SESSION.grade;
+      document.getElementById('emptyTitle').textContent = 'Sin calificaciones aún';
+      document.getElementById('emptyMsg').textContent = 'Tu docente registrará tus notas aquí';
+      loadScoresForStudent();
+    }
+  }
+
+  // ===== PERIODO =====
+  function setPeriodo(el, p) {
+    document.querySelectorAll('.periodo-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentPeriodo = p;
+    if (currentStudentId) loadScoresForStudent();
+  }
+
+  // ===== DOCENTE: selección grado =====
+  async function onGradeChange() {
+    const grade = document.getElementById('selGrade').value;
+    currentGrade = grade;
+    currentStudentId = null;
+    document.getElementById('studentFieldWrap').style.display = 'none';
+    document.getElementById('notaHint').style.display = 'none';
+    document.getElementById('avgCard').style.display = 'none';
+    document.getElementById('sectionLabel').style.display = 'none';
+    document.getElementById('subjectTable').innerHTML = '';
+    document.getElementById('emptyState').classList.add('show');
+    if (!grade) return;
+
+    // Cargar estudiantes del grado
+    try {
+      const snap = await window._getDocs(window._query(
+        window._collection(window._db, 'users'),
+        window._where('role','==','estudiante'),
+        window._where('grade','==',grade)
+      ));
+      allStudents = snap.docs.map(d => ({id:d.id,...d.data()}))
+        .sort((a,b) => a.name.localeCompare(b.name));
+
+      const sel = document.getElementById('selStudent');
+      sel.innerHTML = '<option value="">-- Selecciona estudiante --</option>' +
+        allStudents.map(s => `<option value="${s.id}">${escHtml(s.name)}</option>`).join('');
+      document.getElementById('studentFieldWrap').style.display = 'block';
+    } catch(e) {
+      showToast('Error al cargar estudiantes.','error');
+    }
+  }
+
+  function onStudentChange() {
+    const id = document.getElementById('selStudent').value;
+    if (!id) { currentStudentId=null; return; }
+    const st = allStudents.find(s => s.id === id);
+    currentStudentId = id;
+    currentStudentName = st?.name || 'Estudiante';
+    loadScoresForStudent();
+  }
+
+  // ===== CARGAR NOTAS =====
+  async function loadScoresForStudent() {
+    if (!currentStudentId) return;
+    document.getElementById('emptyState').classList.remove('show');
+    document.getElementById('subjectTable').innerHTML = '<div style="color:var(--muted);font-size:13px;padding:12px 0;">Cargando...</div>';
+
+    const cacheKey = currentStudentId + '_' + currentPeriodo;
+
+    try {
+      // Siempre recargar desde Firestore para tener datos frescos
+      const snap = await window._getDocs(window._query(
+        window._collection(window._db, 'scores'),
+        window._where('studentId','==',currentStudentId),
+        window._where('period','==',currentPeriodo)
+      ));
+      const map = {};
+      snap.docs.forEach(d => { const data=d.data(); map[data.subject]={id:d.id, score:data.score}; });
+      scoresCache[cacheKey] = map;
+      renderScores();
+    } catch(e) {
+      showToast('Error al cargar notas.','error');
+      document.getElementById('subjectTable').innerHTML = '';
+      document.getElementById('emptyState').classList.add('show');
+    } finally {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+  }
+
+  // ===== RENDER NOTAS =====
+  function renderScores() {
+    const cacheKey = currentStudentId + '_' + currentPeriodo;
+    const map = scoresCache[cacheKey] || {};
+    const isDocente = SESSION.role === 'docente' || SESSION.role === 'director';
+
+    // Promedio
+    const scores = MATERIAS.map(m => map[m]?.score).filter(s => s !== undefined && s !== null && s !== '');
+    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+Number(b),0)/scores.length) : null;
+    const grade = scoreGrade(avg);
+
+    const avgCard = document.getElementById('avgCard');
+    avgCard.style.display = 'flex';
+    document.getElementById('avgNum').textContent = avg !== null ? avg : '—';
+    document.getElementById('avgName').textContent = currentStudentName;
+    document.getElementById('avgGrade').textContent =
+      (GRADE_LABELS[currentGrade]||currentGrade||'') + ' · ' + currentPeriodo + ' Trimestre';
+    const badge = document.getElementById('avgBadge');
+    badge.textContent = grade || '—';
+    badge.className = 'avg-badge ' + (grade ? 'badge-'+grade : '');
+
+    document.getElementById('sectionLabel').style.display = 'block';
+    if (isDocente) document.getElementById('notaHint').style.display = 'flex';
+
+    document.getElementById('subjectTable').innerHTML = MATERIAS.map(materia => {
+      const entry = map[materia];
+      const score = entry?.score;
+      const g = scoreGrade(score);
+      const gradeClass = g ? 'grade-'+g : '';
+      const scoreClass = g ? 'score-'+g : 'score-empty';
+
+      if (isDocente) {
+        return `
+        <div class="subject-row ${gradeClass}" id="row-${slugify(materia)}">
+          <div class="subj-name">${escHtml(materia)}</div>
+          <input class="subj-input" type="number" min="0" max="100"
+            id="inp-${slugify(materia)}"
+            value="${score !== undefined && score !== null ? score : ''}"
+            placeholder="—"
+            onchange="onScoreChange('${materia}','${slugify(materia)}')"
+            oninput="onScoreChange('${materia}','${slugify(materia)}')">
+          <button class="btn-save-score" id="btn-${slugify(materia)}"
+            onclick="saveScore('${materia}','${slugify(materia)}')">
+            Guardar
+          </button>
+        </div>`;
+      } else {
+        return `
+        <div class="subject-row ${gradeClass}">
+          <div class="subj-name">${escHtml(materia)}</div>
+          <div class="subj-score ${scoreClass}">${score !== undefined && score !== null ? score : '—'}</div>
+        </div>`;
+      }
+    }).join('');
+  }
+
+  // ===== CAMBIO DE INPUT =====
+  function onScoreChange(materia, slug) {
+    const input = document.getElementById('inp-'+slug);
+    const btn   = document.getElementById('btn-'+slug);
+    const row   = document.getElementById('row-'+slug);
+    let val = input.value.trim();
+
+    // Clamp 0-100
+    if (val !== '' && Number(val) > 100) { input.value = 100; val = '100'; }
+    if (val !== '' && Number(val) < 0)   { input.value = 0;   val = '0'; }
+
+    const g = scoreGrade(val === '' ? null : val);
+    row.className = 'subject-row' + (g ? ' grade-'+g : '');
+    btn.classList.remove('btn-saved');
+    btn.textContent = 'Guardar';
+  }
+
+  // ===== GUARDAR NOTA =====
+  async function saveScore(materia, slug) {
+    const input = document.getElementById('inp-'+slug);
+    const btn   = document.getElementById('btn-'+slug);
+    const val   = input.value.trim();
+
+    if (val === '') { showToast('Escribe una nota entre 0 y 100.','error'); return; }
+    const num = Number(val);
+    if (isNaN(num) || num < 0 || num > 100) { showToast('Nota inválida (0–100).','error'); return; }
+
+    btn.textContent = '...'; btn.disabled = true;
+
+    const cacheKey = currentStudentId + '_' + currentPeriodo;
+    if (!scoresCache[cacheKey]) scoresCache[cacheKey] = {};
+    const existing = scoresCache[cacheKey][materia];
+
+    try {
+      if (existing?.id) {
+        // Actualizar
+        await window._setDoc(window._doc(window._db,'scores',existing.id), {
+          studentId: currentStudentId, subject: materia,
+          grade: currentGrade, score: num, period: currentPeriodo,
+          createdBy: SESSION.uid, updatedAt: new Date().toISOString()
+        });
+        scoresCache[cacheKey][materia].score = num;
+      } else {
+        // Crear nuevo
+        const ref = await window._addDoc(window._collection(window._db,'scores'), {
+          studentId: currentStudentId, subject: materia,
+          grade: currentGrade, score: num, period: currentPeriodo,
+          createdBy: SESSION.uid, createdAt: new Date().toISOString()
+        });
+        scoresCache[cacheKey][materia] = { id: ref.id, score: num };
+      }
+
+      btn.classList.add('btn-saved');
+      btn.textContent = '✓ Guardado';
+      btn.disabled = false;
+
+      // Actualizar promedio en vivo
+      updateAvg();
+      showToast('Nota guardada','success');
+    } catch(e) {
+      btn.textContent = 'Guardar'; btn.disabled = false;
+      showToast('Error al guardar nota.','error');
+    }
+  }
+
+  // ===== PROMEDIO EN VIVO =====
+  function updateAvg() {
+    const cacheKey = currentStudentId + '_' + currentPeriodo;
+    const map = scoresCache[cacheKey] || {};
+    const scores = MATERIAS.map(m => map[m]?.score).filter(s => s !== undefined && s !== null && s !== '');
+    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+Number(b),0)/scores.length) : null;
+    const g = scoreGrade(avg);
+    document.getElementById('avgNum').textContent = avg !== null ? avg : '—';
+    const badge = document.getElementById('avgBadge');
+    badge.textContent = g || '—';
+    badge.className = 'avg-badge ' + (g ? 'badge-'+g : '');
+  }
+
+  // ===== UTILS =====
+  function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]/g,''); }
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent=msg; t.className='toast show '+type;
+    setTimeout(()=>t.className='toast',3200);
+  }
+</script>
+</body>
+</html>
