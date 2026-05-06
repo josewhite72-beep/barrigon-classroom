@@ -186,6 +186,14 @@
   .toast.success { border-color:rgba(26,158,122,0.4); color:var(--teal-light); }
   .toast.error   { border-color:rgba(217,79,61,0.4); color:var(--coral-light); }
 
+  .btn-del-score {
+    background:rgba(217,79,61,0.15); border:1.5px solid rgba(217,79,61,0.3);
+    border-radius:8px; padding:6px 10px;
+    color:var(--coral-light); font-size:13px; font-weight:800;
+    cursor:pointer; transition:all 0.2s; flex-shrink:0;
+  }
+  .btn-del-score:active { transform:scale(0.95); }
+
   /* HINT nota */
   .nota-hint {
     background:var(--bg3); border:1px solid var(--border);
@@ -488,12 +496,13 @@
       const scoreClass = g ? 'score-'+g : 'score-empty';
 
       if (isDocente) {
+        const hasScore = score !== undefined && score !== null && score !== '';
         return `
         <div class="subject-row ${gradeClass}" id="row-${slugify(materia)}">
           <div class="subj-name">${escHtml(materia)}</div>
           <input class="subj-input" type="number" min="1" max="5" step="0.1"
             id="inp-${slugify(materia)}"
-            value="${score !== undefined && score !== null ? score : ''}"
+            value="${hasScore ? score : ''}"
             placeholder="—"
             onchange="onScoreChange('${materia}','${slugify(materia)}')"
             oninput="onScoreChange('${materia}','${slugify(materia)}')">
@@ -501,6 +510,8 @@
             onclick="saveScore('${materia}','${slugify(materia)}')">
             Guardar
           </button>
+          ${hasScore ? `<button class="btn-del-score" id="del-${slugify(materia)}"
+            onclick="deleteScore('${materia}','${slugify(materia)}')" title="Borrar nota">✕</button>` : ''}
         </div>`;
       } else {
         return `
@@ -574,6 +585,27 @@
     } catch(e) {
       btn.textContent = 'Guardar'; btn.disabled = false;
       showToast('Error al guardar nota.','error');
+    }
+  }
+
+  // ===== BORRAR NOTA =====
+  async function deleteScore(materia, slug) {
+    const cacheKey = currentStudentId + '_' + currentPeriodo;
+    const existing = scoresCache[cacheKey]?.[materia];
+    if (!existing?.id) return;
+
+    const btn = document.getElementById('del-'+slug);
+    if (btn) { btn.textContent = '...'; btn.disabled = true; }
+
+    try {
+      await window._deleteDoc(window._doc(window._db, 'scores', existing.id));
+      delete scoresCache[cacheKey][materia];
+      showToast('Nota eliminada', 'success');
+      renderScores(); // re-render para quitar el botón ✕
+      updateAvg();
+    } catch(e) {
+      showToast('Error al eliminar nota.', 'error');
+      if (btn) { btn.textContent = '✕'; btn.disabled = false; }
     }
   }
 
