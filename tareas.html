@@ -6,7 +6,6 @@
 <title>Tareas · Barrigón Classroom</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  /* === MISMOS ESTILOS QUE EL ORIGINAL (sin cambios) === */
   :root {
     --bg: #0f1923; --bg2: #162030; --bg3: #1e2d40; --card: #1a2a3a;
     --border: rgba(255,255,255,0.08); --text: #f0f4f8; --muted: #7a9ab8;
@@ -18,7 +17,7 @@
   body { font-family: 'Nunito Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
   .bg-orbs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
   .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.12; animation:drift 20s ease-in-out infinite; }
-  .orb1 { width:380px; height:380px; background:#2e7de9; top:-80px; right:-80px; animation-delay:0s; }
+  .orb1 { width:380px; height:380px; background:#2e7de9; top:-80px; right:-80px; }
   .orb2 { width:300px; height:300px; background:#7c5cbf; bottom:-60px; left:-60px; animation-delay:-10s; }
   @keyframes drift { 0%,100% { transform:translate(0,0) scale(1); } 50% { transform:translate(-20px,20px) scale(1.04); } }
   .container { position:relative; z-index:1; width:100%; max-width:480px; margin:0 auto; padding:0 16px 80px; }
@@ -34,7 +33,6 @@
   .filter-row::-webkit-scrollbar { display:none; }
   .filter-chip { padding:7px 14px; background:var(--bg3); border:1.5px solid var(--border); border-radius:20px; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; color:var(--muted); cursor:pointer; transition:all 0.15s; white-space:nowrap; flex-shrink:0; }
   .filter-chip.active-blue { background:rgba(46,125,233,0.15); border-color:var(--blue-light); color:var(--blue-light); }
-  .filter-chip.active-teal { background:rgba(26,158,122,0.15); border-color:var(--teal-light); color:var(--teal-light); }
   .mini-stats { display:flex; gap:10px; margin-bottom:18px; }
   .mini-stat { flex:1; background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; text-align:center; }
   .mini-stat-num { font-family:'Nunito',sans-serif; font-size:22px; font-weight:900; display:block; }
@@ -114,30 +112,6 @@
   @keyframes pageFadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
   .page-header { animation: slideFromTop 0.4s cubic-bezier(0.34,1.2,0.64,1) 0.05s both; }
   @keyframes slideFromTop { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes cardFloat { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
-  @keyframes cardReveal { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-  .btn-primary, .btn-nueva, .btn-publicar, .btn-agregar, .btn-save, .btn-save-amber, .btn-save-coral, .btn-import-confirm, .btn-new, .btn-import { transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease !important; }
-  .btn-primary:active, .btn-nueva:active, .btn-publicar:active, .btn-agregar:active, .btn-save:active, .btn-save-amber:active, .btn-save-coral:active, .btn-import-confirm:active, .btn-new:active, .btn-import:active { transform: scale(0.96) !important; }
-  .periodo-tab, .main-tab, .filter-chip, .grade-chip { transition: all 0.2s cubic-bezier(0.34,1.2,0.64,1) !important; }
-  .periodo-tab:active, .main-tab:active, .filter-chip:active, .grade-chip:active { transform: scale(0.95); }
-  .modal { transition: transform 0.35s cubic-bezier(0.34,1.3,0.64,1) !important; }
-  .back-btn { transition: all 0.2s cubic-bezier(0.34,1.4,0.64,1) !important; }
-  .back-btn:active { transform: scale(0.9) !important; }
-  .orb1 { animation: drift1 18s ease-in-out infinite !important; }
-  .orb2 { animation: drift2 22s ease-in-out infinite !important; }
-  @keyframes drift1 { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(40px,-30px) scale(1.08); } 50% { transform: translate(20px,40px) scale(0.92); } 75% { transform: translate(-30px,10px) scale(1.04); } }
-  @keyframes drift2 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-40px,30px) scale(1.1); } 66% { transform: translate(30px,-20px) scale(0.9); } }
-  .task-card { animation: cardReveal 0.35s ease both, cardFloat 5s ease-in-out 0.35s infinite; transition: box-shadow 0.2s ease, transform 0.2s ease; }
-  .task-card:nth-child(1) { animation-delay: 0.05s, 0.4s; }
-  .task-card:nth-child(2) { animation-delay: 0.10s, 0.45s; }
-  .task-card:nth-child(3) { animation-delay: 0.15s, 0.50s; }
-  .task-card:nth-child(4) { animation-delay: 0.20s, 0.55s; }
-  .task-card:nth-child(5) { animation-delay: 0.25s, 0.60s; }
-  .task-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.25); animation-play-state: paused, paused; }
-  .mini-stat { animation: cardReveal 0.35s ease both; }
-  .mini-stat:nth-child(1) { animation-delay: 0.05s; }
-  .mini-stat:nth-child(2) { animation-delay: 0.10s; }
-  .mini-stat:nth-child(3) { animation-delay: 0.15s; }
 </style>
 </head>
 <body>
@@ -145,11 +119,11 @@
 <div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
-  <p id="loadingMsg">Cargando tareas...</p>
+  <p>Cargando tareas...</p>
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- ===== MODAL NUEVA TAREA ===== -->
+<!-- MODAL NUEVA TAREA -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -161,8 +135,8 @@
       <div class="char-count" id="titleCount">0/80</div>
     </div>
     <div class="field">
-      <label>Descripción / Instrucciones</label>
-      <textarea id="inDesc" placeholder="Explica qué deben hacer los estudiantes..." maxlength="500"></textarea>
+      <label>Descripción</label>
+      <textarea id="inDesc" placeholder="Explica qué deben hacer..." maxlength="500"></textarea>
       <div class="char-count" id="descCount">0/500</div>
     </div>
     <div class="field-row">
@@ -177,12 +151,10 @@
           <option value="Inglés">Inglés</option>
           <option value="Español">Español</option>
           <option value="Matemáticas">Matemáticas</option>
-          <option value="Ciencias">Ciencias Naturales</option>
-          <option value="Sociales">Ciencias Sociales</option>
+          <option value="Ciencias">Ciencias</option>
+          <option value="Sociales">Sociales</option>
           <option value="Arte">Arte</option>
           <option value="Ed. Física">Ed. Física</option>
-          <option value="Religión">Religión</option>
-          <option value="General">General</option>
         </select>
       </div>
     </div>
@@ -197,7 +169,7 @@
   </div>
 </div>
 
-<!-- ===== CONFIRM DELETE ===== -->
+<!-- CONFIRM DELETE -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
     <div style="font-size:36px;margin-bottom:12px;">🗑️</div>
@@ -210,7 +182,7 @@
   </div>
 </div>
 
-<!-- ===== CONTENIDO ===== -->
+<!-- CONTENIDO -->
 <div class="container">
   <div class="page-header">
     <a class="back-btn" href="index.html">←</a>
@@ -244,15 +216,11 @@
   </div>
 </div>
 
-<!-- ✅ SCRIPT ÚNICO DE TIPO MODULE (CONSOLIDADO) -->
 <script type="module">
-  // ===== IMPORTS FIREBASE =====
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, deleteDoc, getDocs, doc, query, where, orderBy }
+  import { getFirestore, collection, addDoc, deleteDoc, getDocs, doc, query, where }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // ===== CONFIG FIREBASE =====
   const firebaseConfig = {
     apiKey: "AIzaSyBJZFP_BZa5YR4GqDqYi938I15FxkUFsjE",
     authDomain: "barrigon-classroom.firebaseapp.com",
@@ -262,31 +230,27 @@
     appId: "1:987121913715:web:4d61a24e8facf6766bff06"
   };
 
-  // ===== INICIALIZAR FIREBASE =====
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const auth = getAuth(app);
 
-  // ===== ESTADO GLOBAL DE LA APP =====
   let SESSION = null;
   let allTasks = [];
   let currentSubject = 'all';
-  let deleteTargetId = null;
 
   const GRADE_LABELS = {
     prek:'PreK', kinder:'Kinder',
     '1ro':'1°','2do':'2°','3ro':'3°','4to':'4°','5to':'5°','6to':'6°', all:'Todos'
   };
 
-  // ===== UTILS =====
   function escHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   function showToast(msg, type='success') {
     const t = document.getElementById('toast');
-    t.textContent = msg; t.className = 'toast show ' + type;
-    setTimeout(() => t.className = 'toast', 3200);
+    t.textContent = msg; 
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 3000);
   }
 
   function getDueClass(dueDate) {
@@ -294,7 +258,7 @@
     const today = new Date(); today.setHours(0,0,0,0);
     const d = new Date(dueDate + 'T23:59:59');
     const diff = Math.ceil((d - today) / (1000*60*60*24));
-    if (diff < 0)  return 'due-late';
+    if (diff < 0) return 'due-late';
     if (diff <= 3) return 'due-soon';
     return 'due-ok';
   }
@@ -304,16 +268,44 @@
     const today = new Date(); today.setHours(0,0,0,0);
     const d = new Date(dueDate + 'T23:59:59');
     const diff = Math.ceil((d - today) / (1000*60*60*24));
-    if (diff < 0)  return 'Venció hace ' + Math.abs(diff) + 'd';
+    if (diff < 0) return 'Venció hace ' + Math.abs(diff) + 'd';
     if (diff === 0) return '⚠️ Vence hoy';
     if (diff === 1) return '⚡ Mañana';
-    if (diff <= 3)  return '⏰ En ' + diff + ' días';
+    if (diff <= 3) return '⏰ En ' + diff + ' días';
     const [y,m,day] = dueDate.split('-');
     const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
     return `📅 ${day} ${meses[parseInt(m)-1]}`;
   }
 
-  // ===== RENDER TAREAS =====
+  // ✅ FUNCIÓN CRÍTICA: Eliminar tarea con validación estricta
+  async function deleteTask(taskId, taskTitle) {
+    // Validación estricta del ID
+    if (!taskId || taskId === 'null' || taskId === 'undefined' || taskId.trim() === '') {
+      console.error('❌ ID de tarea inválido:', taskId);
+      showToast('Error: ID de tarea inválido', 'error');
+      return;
+    }
+
+    // Confirmación
+    if (!confirm(`¿Eliminar la tarea "${taskTitle}"?`)) {
+      return;
+    }
+
+    try {
+      console.log('🗑️ Eliminando tarea:', taskId);
+      const docRef = doc(db, 'tasks', taskId);
+      await deleteDoc(docRef);
+      
+      // Actualizar lista local
+      allTasks = allTasks.filter(t => t.id !== taskId);
+      renderTasks();
+      showToast('✅ Tarea eliminada', 'success');
+    } catch (error) {
+      console.error('❌ Error eliminando:', error);
+      showToast('Error al eliminar: ' + error.message, 'error');
+    }
+  }
+
   function renderTasks() {
     const list = document.getElementById('taskList');
     const empty = document.getElementById('emptyState');
@@ -355,44 +347,34 @@
       const canDelete = SESSION?.role === 'director' || (SESSION?.role === 'docente' && (t.createdBy === SESSION?.uid || SESSION?.uid === 'demo'));
 
       return `
-      <div class="task-card ${dueClass}" id="tc-${t.id}">
+      <div class="task-card ${dueClass}">
         <div class="task-top">
           <div class="task-title">${escHtml(t.title)}</div>
           ${canDelete ? `<div class="task-actions">
-            <button class="btn-task-del" data-id="${t.id}" data-title="${escHtml(t.title)}" title="Eliminar">🗑️</button>
+            <button class="btn-task-del" title="Eliminar">🗑️</button>
           </div>` : ''}
         </div>
-        ${t.description ? `<div class="task-desc" id="desc-${t.id}">${escHtml(t.description)}</div>` : ''}
+        ${t.description ? `<div class="task-desc">${escHtml(t.description)}</div>` : ''}
         <div class="task-meta">
           ${t.grade ? `<span class="meta-chip chip-grade">${GRADE_LABELS[t.grade]||t.grade}</span>` : ''}
           ${t.subject ? `<span class="meta-chip chip-subject">${escHtml(t.subject)}</span>` : ''}
           ${t.dueDate ? `<span class="meta-chip ${chipDue}">${dueLabel}</span>` : ''}
-          ${t.description && t.description.length > 80 ? `<button class="btn-expand">ver más</button>` : ''}
         </div>
       </div>`;
     }).join('');
 
-    // ✅ Event listeners para botones dinámicos
-    list.querySelectorAll('.btn-task-del').forEach(btn => {
+    // ✅ Agregar event listeners DESPUÉS de renderizar
+    list.querySelectorAll('.btn-task-del').forEach((btn, index) => {
+      const task = filtered[index];
       btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        const title = e.currentTarget.getAttribute('data-title');
-        askDelete(id, title);
-      });
-    });
-
-    list.querySelectorAll('.btn-expand').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const card = e.currentTarget.closest('.task-card');
-        const desc = card?.querySelector('.task-desc');
-        if (!desc) return;
-        desc.classList.toggle('expanded');
-        e.currentTarget.textContent = desc.classList.contains('expanded') ? 'ver menos' : 'ver más';
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🗑️ Click en eliminar:', task.id, task.title);
+        deleteTask(task.id, task.title);
       });
     });
   }
 
-  // ===== CARGAR TAREAS =====
   async function loadTasks() {
     try {
       const role = SESSION?.role;
@@ -427,7 +409,6 @@
     }
   }
 
-  // ===== APLICAR SESIÓN =====
   function applySession() {
     const r = SESSION?.role;
     const grades = SESSION?.grades || [];
@@ -453,7 +434,6 @@
     document.getElementById('inDue').min = new Date().toISOString().split('T')[0];
   }
 
-  // ===== PROMPT SESIÓN (FALLBACK) =====
   function promptSession() {
     const params = new URLSearchParams(location.search);
     return {
@@ -465,7 +445,6 @@
     };
   }
 
-  // ===== INIT PAGE =====
   function initPage() {
     try { SESSION = JSON.parse(sessionStorage.getItem('bc_session') || 'null'); } catch(e) {}
     if (!SESSION) SESSION = promptSession();
@@ -473,145 +452,80 @@
     loadTasks();
   }
 
-  // ===== MODAL FUNCTIONS =====
-  function openModal() {
-    document.getElementById('inTitle').value = '';
-    document.getElementById('inDesc').value = '';
-    document.getElementById('inGrade').value = '';
-    document.getElementById('inSubject').value = '';
-    document.getElementById('inDue').value = '';
-    document.getElementById('titleCount').textContent = '0/80';
-    document.getElementById('descCount').textContent = '0/500';
-    document.getElementById('formError').classList.remove('show');
-    document.getElementById('btnSave').disabled = false;
-    document.getElementById('modalOverlay').classList.add('open');
-    setTimeout(() => document.getElementById('inTitle').focus(), 350);
-  }
-
-  function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('open');
-  }
-
-  function closeModalOutside(e) {
-    if (e.target.id === 'modalOverlay') closeModal();
-  }
-
-  // ===== SAVE TASK =====
-  async function saveTask() {
-    const title = document.getElementById('inTitle').value.trim();
-    const desc = document.getElementById('inDesc').value.trim();
-    const grade = document.getElementById('inGrade').value;
-    const subject = document.getElementById('inSubject').value;
-    const due = document.getElementById('inDue').value;
-    const err = document.getElementById('formError');
-    err.classList.remove('show');
-
-    if (!title) { err.textContent='Escribe un título para la tarea.'; err.classList.add('show'); return; }
-    if (!grade) { err.textContent='Selecciona el grado.'; err.classList.add('show'); return; }
-    if (!subject) { err.textContent='Selecciona la materia.'; err.classList.add('show'); return; }
-
-    const btn = document.getElementById('btnSave');
-    btn.disabled = true;
-    btn.textContent = 'Publicando...';
-
-    try {
-      const data = {
-        title, grade, subject,
-        description: desc || '',
-        dueDate: due || null,
-        createdBy: SESSION?.uid,
-        createdByName: SESSION?.name,
-        createdAt: new Date().toISOString()
-      };
-      const ref = await addDoc(collection(db, 'tasks'), data);
-      allTasks.unshift({ id: ref.id, ...data });
-      allTasks.sort((a,b) => (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
-      closeModal();
-      renderTasks();
-      showToast('✅ Tarea publicada', 'success');
-    } catch(e) {
-      console.error('Error guardando tarea:', e);
-      err.textContent = 'Error al guardar. Verifica conexión.';
-      err.classList.add('show');
-      btn.disabled = false;
-      btn.textContent = 'Publicar tarea';
-    }
-  }
-
-  // ===== DELETE FUNCTIONS (✅ CORREGIDAS) =====
-  function askDelete(id, title) {
-    deleteTargetId = id;
-    document.getElementById('confirmTaskTitle').textContent = title;
-    document.getElementById('confirmOverlay').classList.add('open');
-  }
-
-  function closeConfirm() {
-    deleteTargetId = null;
-    document.getElementById('confirmOverlay').classList.remove('open');
-  }
-
-  // ✅ confirmDelete AHORA USA FUNCIONES DE FIREBASE DIRECTAMENTE EN CONTEXTO MODULE
-  async function confirmDelete() {
-    if (!deleteTargetId) return;
-    closeConfirm();
-    try {
-      // ✅ Usamos deleteDoc y doc directamente (no desde window), garantizando contexto correcto
-      const docRef = doc(db, 'tasks', deleteTargetId);
-      await deleteDoc(docRef);
-      allTasks = allTasks.filter(t => t.id !== deleteTargetId);
-      deleteTargetId = null;
-      renderTasks();
-      showToast('🗑️ Tarea eliminada', 'success');
-    } catch(e) {
-      console.error('Error eliminando tarea:', e);
-      showToast('Error: ' + (e.code || e.message || JSON.stringify(e)), 'error');
-    }
-  }
-
-  // ===== FILTER SUBJECT =====
-  function filterSubject(subject) {
-    currentSubject = subject;
-    document.querySelectorAll('.filter-chip').forEach(c => {
-      c.classList.remove('active-blue','active-teal');
-      if (c.dataset.subject === subject) c.classList.add('active-blue');
-    });
-    renderTasks();
-  }
-
-  // ===== EVENT LISTENERS GLOBALES =====
+  // Event listeners
   document.addEventListener('DOMContentLoaded', () => {
-    // Contadores de caracteres
-    document.getElementById('inTitle').addEventListener('input', (e) => {
+    document.getElementById('inTitle')?.addEventListener('input', (e) => {
       document.getElementById('titleCount').textContent = `${e.target.value.length}/80`;
     });
-    document.getElementById('inDesc').addEventListener('input', (e) => {
+    document.getElementById('inDesc')?.addEventListener('input', (e) => {
       document.getElementById('descCount').textContent = `${e.target.value.length}/500`;
     });
 
-    // Botones del modal
-    document.getElementById('btnNueva')?.addEventListener('click', openModal);
-    document.getElementById('btnCancel')?.addEventListener('click', closeModal);
-    document.getElementById('modalOverlay')?.addEventListener('click', closeModalOutside);
-    document.getElementById('btnSave')?.addEventListener('click', saveTask);
-
-    // Confirm delete
-    document.getElementById('btnConfCancel')?.addEventListener('click', closeConfirm);
-    document.getElementById('btnConfDel')?.addEventListener('click', confirmDelete);
-
-    // Filtros
-    document.querySelectorAll('.filter-chip').forEach(chip => {
-      chip.addEventListener('click', () => filterSubject(chip.dataset.subject));
+    document.getElementById('btnNueva')?.addEventListener('click', () => {
+      document.getElementById('modalOverlay').classList.add('open');
+    });
+    document.getElementById('btnCancel')?.addEventListener('click', () => {
+      document.getElementById('modalOverlay').classList.remove('open');
+    });
+    document.getElementById('modalOverlay')?.addEventListener('click', (e) => {
+      if (e.target.id === 'modalOverlay') {
+        document.getElementById('modalOverlay').classList.remove('open');
+      }
     });
 
-    // Inicializar
+    document.getElementById('btnSave')?.addEventListener('click', async () => {
+      const title = document.getElementById('inTitle').value.trim();
+      const desc = document.getElementById('inDesc').value.trim();
+      const grade = document.getElementById('inGrade').value;
+      const subject = document.getElementById('inSubject').value;
+      const due = document.getElementById('inDue').value;
+      const err = document.getElementById('formError');
+      
+      err.classList.remove('show');
+      if (!title) { err.textContent='Escribe un título'; err.classList.add('show'); return; }
+      if (!grade) { err.textContent='Selecciona el grado'; err.classList.add('show'); return; }
+      if (!subject) { err.textContent='Selecciona la materia'; err.classList.add('show'); return; }
+
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true;
+      btn.textContent = 'Publicando...';
+
+      try {
+        const data = {
+          title, grade, subject,
+          description: desc || '',
+          dueDate: due || null,
+          createdBy: SESSION?.uid,
+          createdByName: SESSION?.name,
+          createdAt: new Date().toISOString()
+        };
+        const ref = await addDoc(collection(db, 'tasks'), data);
+        allTasks.unshift({ id: ref.id, ...data });
+        allTasks.sort((a,b) => (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
+        document.getElementById('modalOverlay').classList.remove('open');
+        renderTasks();
+        showToast('✅ Tarea publicada', 'success');
+      } catch(e) {
+        console.error('Error:', e);
+        err.textContent = 'Error al guardar';
+        err.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Publicar tarea';
+      }
+    });
+
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        currentSubject = chip.dataset.subject;
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active-blue'));
+        chip.classList.add('active-blue');
+        renderTasks();
+      });
+    });
+
     initPage();
   });
-
-  // ✅ Exponer funciones al DOM para onclick (solo si es estrictamente necesario)
-  window.askDelete = askDelete;
-  window.closeModal = closeModal;
-  window.closeModalOutside = closeModalOutside;
-  window.filterSubject = filterSubject;
 </script>
 </body>
 </html>
