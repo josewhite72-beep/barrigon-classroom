@@ -794,7 +794,7 @@
         <div class="task-top">
           <div class="task-title">${escHtml(t.title)}</div>
           ${canDelete ? `<div class="task-actions">
-            <button class="btn-task-del" onclick="askDelete('${t.id}','${escHtml(t.title)}')" title="Eliminar">🗑️</button>
+            <button class="btn-task-del" data-id="${t.id}" data-title="${escHtml(t.title)}" onclick="askDeleteBtn(this)" title="Eliminar">🗑️</button>
           </div>` : ''}
         </div>
         ${t.description ? `<div class="task-desc" id="desc-${t.id}">${escHtml(t.description)}
@@ -923,6 +923,12 @@
   }
 
   // ===== ELIMINAR =====
+  function askDeleteBtn(btn) {
+    const id    = btn.getAttribute('data-id');
+    const title = btn.getAttribute('data-title');
+    askDelete(id, title);
+  }
+
   function askDelete(id, title) {
     deleteTargetId = id;
     document.getElementById('confirmTaskTitle').textContent = title;
