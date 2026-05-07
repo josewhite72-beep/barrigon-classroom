@@ -157,7 +157,144 @@
   .role-card.padre h3    { color: var(--amber-light); }
   .role-card p { font-size: 11px; color: var(--muted); line-height: 1.4; }
 
-  /* ===== PANTALLA LOGIN ===== */
+  /* ===== ANIMACIONES ===== */
+
+  /* Fade-in al activar pantalla */
+  .screen.active {
+    animation: screenFadeIn 0.35s ease forwards;
+  }
+  @keyframes screenFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Role cards — float idle + entrada escalonada */
+  .role-card {
+    animation: cardFloat 4s ease-in-out infinite;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .role-card:nth-child(1) { animation-delay: 0s; }
+  .role-card:nth-child(2) { animation-delay: 0.5s; }
+  .role-card:nth-child(3) { animation-delay: 1s; }
+  .role-card:nth-child(4) { animation-delay: 1.5s; }
+  @keyframes cardFloat {
+    0%,100% { transform: translateY(0px); }
+    50%     { transform: translateY(-5px); }
+  }
+  .role-card:active {
+    transform: scale(0.96) translateY(0px) !important;
+    animation-play-state: paused;
+  }
+  .role-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    animation-play-state: paused;
+  }
+
+  /* Module cards — float + entrada escalonada */
+  .module-card {
+    animation: cardFloat 4.5s ease-in-out infinite;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .module-card:nth-child(1) { animation-delay: 0s; }
+  .module-card:nth-child(2) { animation-delay: 0.4s; }
+  .module-card:nth-child(3) { animation-delay: 0.8s; }
+  .module-card:nth-child(4) { animation-delay: 1.2s; }
+  .module-card:nth-child(5) { animation-delay: 1.6s; }
+  .module-card:nth-child(6) { animation-delay: 2.0s; }
+  .module-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    animation-play-state: paused;
+  }
+  .module-card:active {
+    transform: scale(0.96) translateY(0px) !important;
+    animation-play-state: paused;
+  }
+
+  /* Entrada escalonada de módulos en el dashboard */
+  @keyframes moduleReveal {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .module-card {
+    opacity: 0;
+    animation: moduleReveal 0.4s ease forwards, cardFloat 4.5s ease-in-out 0.4s infinite;
+  }
+  .module-card:nth-child(1) { animation-delay: 0.05s, 0.45s; }
+  .module-card:nth-child(2) { animation-delay: 0.12s, 0.52s; }
+  .module-card:nth-child(3) { animation-delay: 0.19s, 0.59s; }
+  .module-card:nth-child(4) { animation-delay: 0.26s, 0.66s; }
+  .module-card:nth-child(5) { animation-delay: 0.33s, 0.73s; }
+  .module-card:nth-child(6) { animation-delay: 0.40s, 0.80s; }
+
+  /* Logo pulse suave */
+  .logo-wrap {
+    animation: pop 0.6s cubic-bezier(0.34,1.56,0.64,1), logoPulse 3s ease-in-out 1s infinite;
+  }
+  @keyframes logoPulse {
+    0%,100% { box-shadow: 0 8px 32px rgba(46,125,233,0.3); }
+    50%     { box-shadow: 0 8px 48px rgba(46,125,233,0.55), 0 0 24px rgba(46,125,233,0.2); }
+  }
+
+  /* Botones — micro bounce */
+  .btn-primary, .btn-microsoft {
+    transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease;
+  }
+  .btn-primary:active { transform: scale(0.96) !important; }
+  .btn-microsoft:active { transform: scale(0.97); }
+
+  /* Announce card — slide desde izquierda */
+  .dash-announce {
+    animation: slideFromLeft 0.5s cubic-bezier(0.34,1.2,0.64,1) 0.1s both;
+  }
+  @keyframes slideFromLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Hero text — fade up escalonado */
+  .hero h1 { animation: fadeUp 0.5s ease 0.15s both; }
+  .hero > p { animation: fadeUp 0.5s ease 0.25s both; }
+  .roles-title { animation: fadeUp 0.5s ease 0.35s both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Roles grid — entrada */
+  .roles-grid { animation: fadeUp 0.5s ease 0.4s both; }
+
+  /* Orbs — movimiento más fluido y variado */
+  .orb1 { animation: drift1 18s ease-in-out infinite; }
+  .orb2 { animation: drift2 22s ease-in-out infinite; }
+  .orb3 { animation: drift3 16s ease-in-out infinite; }
+  @keyframes drift1 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    25%  { transform: translate(40px,-30px) scale(1.08); }
+    50%  { transform: translate(20px,40px) scale(0.92); }
+    75%  { transform: translate(-30px,10px) scale(1.04); }
+  }
+  @keyframes drift2 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33%  { transform: translate(-40px,30px) scale(1.1); }
+    66%  { transform: translate(30px,-20px) scale(0.9); }
+  }
+  @keyframes drift3 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    40%  { transform: translate(30px,30px) scale(1.06); }
+    80%  { transform: translate(-20px,-30px) scale(0.94); }
+  }
+
+  /* Form card — entrada suave */
+  .form-card {
+    animation: fadeUp 0.4s ease 0.2s both;
+  }
+
+  /* Login header */
+  .login-header {
+    animation: fadeUp 0.4s ease 0.1s both;
+  }
   .login-wrap {
     width: 100%; max-width: 420px;
     padding-top: 50px;
@@ -925,17 +1062,20 @@
     document.getElementById('dashName').textContent = name;
     const grid = document.getElementById('dashModules');
     grid.innerHTML = '';
-    (MODULES[role] || []).forEach(mod => {
-      const action = mod.soon
-        ? ''
-        : `onclick="goToModule('${mod.url}')"`;
-      grid.innerHTML += `
-        <div class="module-card ${mod.color}" ${action} style="${mod.soon?'':'cursor:pointer'}">
-          ${mod.soon ? '<span class="coming-soon">Pronto</span>' : ''}
-          <span class="mod-icon">${mod.icon}</span>
-          <h4>${mod.title}</h4>
-          <p>${mod.desc}</p>
-        </div>`;
+    (MODULES[role] || []).forEach((mod, i) => {
+      const action = mod.soon ? '' : `onclick="goToModule('${mod.url}')"`;
+      const div = document.createElement('div');
+      div.className = `module-card ${mod.color}`;
+      div.style.cssText = mod.soon ? '' : 'cursor:pointer';
+      div.setAttribute('style', (mod.soon ? '' : 'cursor:pointer;') +
+        `animation-delay: ${0.05 + i * 0.07}s, ${0.45 + i * 0.07}s`);
+      if (!mod.soon) div.onclick = () => goToModule(mod.url);
+      div.innerHTML = `
+        ${mod.soon ? '<span class="coming-soon">Pronto</span>' : ''}
+        <span class="mod-icon">${mod.icon}</span>
+        <h4>${mod.title}</h4>
+        <p>${mod.desc}</p>`;
+      grid.appendChild(div);
     });
     showScreen('screenDashboard');
   }
