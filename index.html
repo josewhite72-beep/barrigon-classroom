@@ -792,7 +792,10 @@
         <span id="dashWelcome">Bienvenido</span>
         <h2 id="dashName">Usuario</h2>
       </div>
-      <button class="logout-btn" onclick="logout()">Salir</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="logout-btn" onclick="clearCache()" title="Limpiar caché" style="background:rgba(255,255,255,0.08);font-size:16px;padding:8px 10px;">🔄</button>
+        <button class="logout-btn" onclick="logout()">Salir</button>
+      </div>
     </div>
 
     <div class="dash-announce">
@@ -877,7 +880,7 @@
       { icon:'📢', title:'Anuncios', desc:'Avisos de la escuela', color:'mod-green', url:'anuncios.html' },
       { icon:'📁', title:'Recursos', desc:'Materiales de clase', color:'mod-purple', url:'recursos.html' },
       { icon:'🎮', title:'Juegos', desc:'Apps educativas', color:'mod-coral', url:'recursos.html' },
-      { icon:'📤', title:'Entregas', desc:'Enviar trabajos', color:'mod-teal', soon:true },
+      { icon:'📤', title:'Entregas', desc:'Enviar trabajos', color:'mod-teal', url:'entregas.html' },
     ],
     padre: [
       { icon:'📊', title:'Calificaciones', desc:'Notas de mi hijo/a', color:'mod-amber', url:'calificaciones.html' },
@@ -1074,6 +1077,29 @@
       grid.appendChild(div);
     });
     showScreen('screenDashboard');
+  }
+
+  async function clearCache() {
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      sessionStorage.clear();
+      localStorage.clear();
+      showToast('🔄 Caché limpiado — recargando...');
+      setTimeout(() => location.reload(true), 1200);
+    } catch(e) {
+      location.reload(true);
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e2d40;color:#f0f4f8;padding:12px 20px;border-radius:12px;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;z-index:999;white-space:nowrap;';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2000);
   }
 
   async function logout() {
