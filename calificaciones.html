@@ -393,6 +393,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, setDoc, getDocs, doc, query, where, deleteDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -405,7 +406,9 @@
     appId: "1:987121913715:web:4d61a24e8facf6766bff06"
   };
   const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
+  const db   = getFirestore(app);
+  const auth = getAuth(app);
+  window._auth = auth;
   window._db=db; window._collection=collection; window._addDoc=addDoc;
   window._setDoc=setDoc; window._getDocs=getDocs; window._doc=doc;
   window._query=query; window._where=where; window._deleteDoc=deleteDoc;

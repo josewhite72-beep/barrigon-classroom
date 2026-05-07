@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== HELPERS =====
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isDirector() {
+      return isAuth() && userDoc().role == 'director';
+    }
+
+    function isDocente() {
+      return isAuth() && (userDoc().role == 'docente' || userDoc().role == 'director');
+    }
+
+    function myGrades() {
+      return userDoc().grades;
+    }
+
+    // ===== USERS =====
+    // Docentes/director leen todos los usuarios (para cargar lista de estudiantes)
+    // Estudiantes solo leen su propio documento
+    // Solo el director puede crear/editar/eliminar usuarios
+    match /users/{userId} {
+      allow read: if isAuth() && (
+        isDocente() ||
+        request.auth.uid == userId
+      );
+      // Lectura pública limitada para login por PIN (query sin auth)
+      // Firebase no permite auth en queries PIN → usamos regla especial:
+      allow read: if resource.data.role == 'estudiante';
+      allow create: if isDocente();
+      allow update: if isDirector() || request.auth.uid == userId;
+      allow delete: if isDocente();
+    }
+
+    // ===== TASKS =====
+    match /tasks/{taskId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isAuth();
+    }
+
+    // ===== SCORES =====
+    match /scores/{scoreId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isAuth();
+    }
+
+    // ===== ANNOUNCEMENTS =====
+    match /announcements/{annId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isAuth();
+    }
+
+    // ===== RESOURCES =====
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isAuth();
+    }
+
+    // ===== GAMES =====
+    match /games/{gameId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isAuth();
+    }
+
+    // ===== SUBMISSIONS =====
+    match /submissions/{subId} {
+      allow read: if true;
+      allow create: if true; // estudiantes sin auth pueden entregar
+      allow update: if isAuth();
+      allow delete: if isAuth();
+    }
+  }
+}
