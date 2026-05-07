@@ -42,10 +42,7 @@ service cloud.firestore {
 
     // ===== TASKS =====
     match /tasks/{taskId} {
-      allow read: if true;
-      allow create: if isAuth();
-      allow update: if isAuth();
-      allow delete: if isAuth();
+      allow read, write: if true;
     }
 
     // ===== SCORES =====
