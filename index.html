@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Barrigón Classroom</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0f1923">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Barrigón">
+<link rel="apple-touch-icon" href="./logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1108,6 +1115,30 @@
     _sessionData = {};
     currentRole = ''; currentPin = ''; selectedGrade = '';
     goHome();
+  }
+</script>
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(reg => {
+          console.log('[App] Service Worker registrado ✓', reg.scope);
+          // Escuchar actualizaciones
+          reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            newSW.addEventListener('statechange', () => {
+              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                // Nueva versión disponible — recargar silenciosamente
+                newSW.postMessage('SKIP_WAITING');
+                window.location.reload();
+              }
+            });
+          });
+        })
+        .catch(err => console.warn('[App] SW no registrado:', err));
+    });
   }
 </script>
 </body>

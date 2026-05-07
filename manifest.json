@@ -1,0 +1,21 @@
+{
+  "name": "Barrigón Classroom",
+  "short_name": "Barrigón",
+  "description": "Plataforma educativa CEBG Barrigón · PreK — 6° Grado · Coclé, Panamá",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0f1923",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education"],
+  "lang": "es-PA"
+}
