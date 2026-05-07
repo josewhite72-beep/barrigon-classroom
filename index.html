@@ -76,15 +76,18 @@
   }
   .logo-wrap {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 88px; height: 88px;
-    background: linear-gradient(135deg, var(--blue), var(--purple));
+    width: 120px; height: 120px;
     border-radius: 24px;
     margin-bottom: 20px;
-    box-shadow: 0 8px 32px rgba(46,125,233,0.3);
-    animation: pop 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    animation: pop 0.6s cubic-bezier(0.34,1.56,0.64,1), logoPulse 3s ease-in-out 1s infinite;
   }
-  @keyframes pop { from { transform: scale(0.5); opacity: 0; } }
-  .logo-wrap svg { width: 48px; height: 48px; }
+  .logo-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
   .hero h1 {
     font-family: 'Nunito', sans-serif;
@@ -622,14 +625,7 @@
 <div class="screen active" id="screenHome">
   <div class="hero">
     <div class="logo-wrap">
-      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="6" y="14" width="36" height="26" rx="4" fill="white" fill-opacity="0.15"/>
-        <rect x="6" y="14" width="36" height="26" rx="4" stroke="white" stroke-width="2"/>
-        <path d="M16 8L24 14L32 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M24 14V26" stroke="white" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="24" cy="29" r="3" fill="white" fill-opacity="0.9"/>
-        <path d="M14 34H20M28 34H34" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
+      <img src="logo.png" alt="Escudo CEBG Barrigón">
     </div>
     <h1>Barrigón <span>Classroom</span></h1>
     <p>CEBG Barrigón · PreK — 6° Grado</p>
