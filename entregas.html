@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Entregas · Barrigón Classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1923; --bg2:#162030; --bg3:#1e2d40; --card:#1a2a3a;
+    --border:rgba(255,255,255,0.08); --text:#f0f4f8; --muted:#7a9ab8;
+    --blue:#2e7de9; --blue-light:#5b9ef7;
+    --teal:#1a9e7a; --teal-light:#2ecfa0;
+    --amber:#d4860a; --amber-light:#f5a623;
+    --coral:#d94f3d; --coral-light:#ff7b6b;
+    --purple:#7c5cbf; --purple-light:#9b7de0;
+    --green:#2d9e5a; --green-light:#5ae090;
+    --radius:16px; --radius-sm:10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Nunito Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  .bg-orbs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.11; animation:drift 20s ease-in-out infinite; }
+  .orb1 { width:360px; height:360px; background:#2d9e5a; top:-80px; left:-60px; animation-delay:0s; }
+  .orb2 { width:280px; height:280px; background:#2e7de9; bottom:-60px; right:-40px; animation-delay:-10s; }
+  @keyframes drift { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(20px,-20px) scale(1.04);} }
+
+  .container { position:relative; z-index:1; width:100%; max-width:480px; margin:0 auto; padding:0 16px 80px; }
+
+  /* HEADER */
+  .page-header { padding:50px 0 20px; display:flex; align-items:center; gap:14px; }
+  .back-btn {
+    background:var(--bg3); border:1.5px solid var(--border); border-radius:10px;
+    width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:18px; cursor:pointer; text-decoration:none; flex-shrink:0;
+    transition:all 0.2s cubic-bezier(0.34,1.4,0.64,1);
+  }
+  .back-btn:active { transform:scale(0.9); }
+  .header-text h1 { font-family:'Nunito',sans-serif; font-size:22px; font-weight:900; }
+  .header-text p { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  /* ROLE PILL */
+  .role-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 12px; border-radius:20px;
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; margin-bottom:18px;
+  }
+  .pill-docente { background:rgba(46,125,233,0.15); border:1px solid rgba(46,125,233,0.3); color:var(--blue-light); }
+  .pill-estudiante { background:rgba(45,158,90,0.15); border:1px solid rgba(45,158,90,0.3); color:var(--green-light); }
+
+  /* SELECTOR TAREA */
+  .field { margin-bottom:16px; }
+  .field label {
+    display:block; font-size:11px; font-weight:700; color:var(--muted);
+    letter-spacing:0.8px; text-transform:uppercase; margin-bottom:7px; font-family:'Nunito',sans-serif;
+  }
+  .field select {
+    width:100%; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:13px 16px; color:var(--text);
+    font-size:15px; font-family:'Nunito Sans',sans-serif;
+    outline:none; transition:border-color 0.2s; -webkit-appearance:none;
+  }
+  .field select:focus { border-color:var(--green); }
+  .field select option { background:var(--bg3); }
+
+  /* ===== VISTA ESTUDIANTE ===== */
+  .entrega-box {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:20px; margin-bottom:16px;
+    display:none;
+  }
+  .entrega-box.show { display:block; animation:slideIn 0.3s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+  .entrega-status {
+    display:flex; align-items:center; gap:10px;
+    padding:12px 14px; border-radius:var(--radius-sm);
+    margin-bottom:16px; font-size:13px; font-weight:700;
+    font-family:'Nunito',sans-serif;
+  }
+  .status-pending { background:rgba(212,134,10,0.15); border:1px solid rgba(212,134,10,0.3); color:var(--amber-light); }
+  .status-submitted { background:rgba(45,158,90,0.15); border:1px solid rgba(45,158,90,0.3); color:var(--green-light); }
+  .status-reviewed { background:rgba(46,125,233,0.15); border:1px solid rgba(46,125,233,0.3); color:var(--blue-light); }
+
+  /* Adjuntos */
+  .attach-section { margin-bottom:18px; }
+  .attach-title {
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:700;
+    color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:10px;
+  }
+  .attach-buttons { display:flex; gap:10px; }
+  .btn-attach {
+    flex:1; padding:14px 10px;
+    background:var(--bg3); border:1.5px dashed rgba(255,255,255,0.15);
+    border-radius:var(--radius-sm);
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    cursor:pointer; transition:all 0.2s; color:var(--muted);
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:700;
+  }
+  .btn-attach:hover { border-color:var(--green); color:var(--green-light); }
+  .btn-attach:active { transform:scale(0.96); }
+  .btn-attach .attach-icon { font-size:26px; }
+  .btn-attach.has-file { border-color:var(--green); background:rgba(45,158,90,0.1); color:var(--green-light); }
+
+  /* Preview foto */
+  .photo-preview {
+    width:100%; border-radius:var(--radius-sm); margin-top:10px;
+    max-height:200px; object-fit:cover; display:none;
+    border:1.5px solid var(--border);
+  }
+  .photo-preview.show { display:block; }
+
+  /* Audio recorder */
+  .audio-recorder {
+    background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:14px;
+    margin-top:10px; display:none;
+  }
+  .audio-recorder.show { display:flex; align-items:center; gap:12px; }
+  .btn-record {
+    width:48px; height:48px; border-radius:50%;
+    background:var(--coral); border:none; color:white;
+    font-size:20px; cursor:pointer; flex-shrink:0;
+    transition:all 0.2s; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 16px rgba(217,79,61,0.35);
+  }
+  .btn-record.recording {
+    background:var(--coral-light);
+    animation:recordPulse 1s ease-in-out infinite;
+  }
+  @keyframes recordPulse {
+    0%,100% { box-shadow:0 4px 16px rgba(217,79,61,0.35); transform:scale(1); }
+    50% { box-shadow:0 4px 28px rgba(217,79,61,0.6); transform:scale(1.08); }
+  }
+  .btn-record:active { transform:scale(0.92); }
+  .record-info { flex:1; }
+  .record-time { font-family:'Nunito',sans-serif; font-size:20px; font-weight:900; color:var(--coral-light); }
+  .record-label { font-size:11px; color:var(--muted); margin-top:2px; }
+  .audio-playback { width:100%; margin-top:8px; display:none; }
+  .audio-playback.show { display:block; }
+
+  /* Notas del docente */
+  .docente-feedback {
+    background:rgba(46,125,233,0.08); border:1px solid rgba(46,125,233,0.2);
+    border-radius:var(--radius-sm); padding:12px 14px; margin-top:14px; display:none;
+  }
+  .docente-feedback.show { display:block; }
+  .feedback-label { font-size:10px; font-weight:700; color:var(--blue-light); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+  .feedback-text { font-size:13px; color:var(--text); line-height:1.5; }
+
+  /* Botón entregar */
+  .btn-submit {
+    width:100%; padding:16px;
+    background:linear-gradient(135deg, var(--green), #1a6b3a);
+    border:none; border-radius:var(--radius-sm);
+    color:#fff; font-family:'Nunito',sans-serif;
+    font-size:16px; font-weight:800;
+    cursor:pointer; transition:all 0.2s;
+    box-shadow:0 4px 20px rgba(45,158,90,0.35);
+    margin-top:6px;
+  }
+  .btn-submit:disabled { opacity:0.4; cursor:not-allowed; box-shadow:none; }
+  .btn-submit:not(:disabled):active { transform:scale(0.97); }
+
+  /* ===== VISTA DOCENTE ===== */
+  .docente-filters { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; margin-bottom:16px; }
+  .docente-filters::-webkit-scrollbar { display:none; }
+  .grade-chip {
+    padding:7px 14px; background:var(--bg3);
+    border:1.5px solid var(--border); border-radius:20px;
+    font-family:'Nunito',sans-serif; font-size:12px; font-weight:700;
+    color:var(--muted); cursor:pointer; transition:all 0.2s;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .grade-chip.sel { background:rgba(45,158,90,0.15); border-color:var(--green-light); color:var(--green-light); }
+
+  .submission-card {
+    background:var(--card); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:16px; margin-bottom:10px;
+    animation:slideIn 0.3s ease;
+  }
+  .sub-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .sub-avatar {
+    width:40px; height:40px; border-radius:10px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--green), #1a6b3a);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-size:16px; font-weight:900; color:#fff;
+  }
+  .sub-info { flex:1; min-width:0; }
+  .sub-name { font-family:'Nunito',sans-serif; font-size:14px; font-weight:800; }
+  .sub-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+  .sub-status-badge {
+    font-size:10px; font-weight:800; padding:3px 10px;
+    border-radius:99px; flex-shrink:0; font-family:'Nunito',sans-serif;
+  }
+  .badge-pending  { background:rgba(212,134,10,0.15); color:var(--amber-light); }
+  .badge-reviewed { background:rgba(46,125,233,0.15); color:var(--blue-light); }
+  .badge-excellent{ background:rgba(45,158,90,0.15); color:var(--green-light); }
+  .badge-repeat   { background:rgba(217,79,61,0.15); color:var(--coral-light); }
+
+  .sub-attachments { display:flex; gap:10px; margin-bottom:12px; }
+  .sub-photo {
+    width:80px; height:80px; border-radius:10px; object-fit:cover;
+    border:1.5px solid var(--border); cursor:pointer;
+    transition:transform 0.2s;
+  }
+  .sub-photo:active { transform:scale(0.95); }
+  .sub-audio-btn {
+    flex:1; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:10px; display:flex; align-items:center; justify-content:center;
+    gap:8px; cursor:pointer; transition:all 0.2s; padding:12px;
+    font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; color:var(--muted);
+  }
+  .sub-audio-btn:hover { border-color:var(--blue); color:var(--blue-light); }
+  .sub-audio-btn:active { transform:scale(0.97); }
+
+  /* Botones de calificación rápida */
+  .quick-grade { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .btn-qgrade {
+    flex:1; min-width:calc(25% - 6px); padding:10px 6px;
+    background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    font-size:18px; cursor:pointer; transition:all 0.2s;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  .btn-qgrade span { font-size:9px; font-weight:700; color:var(--muted); font-family:'Nunito',sans-serif; text-transform:uppercase; }
+  .btn-qgrade:active { transform:scale(0.92); }
+  .btn-qgrade.sel-revisado  { background:rgba(46,125,233,0.2); border-color:var(--blue-light); }
+  .btn-qgrade.sel-excelente { background:rgba(45,158,90,0.2); border-color:var(--green-light); }
+  .btn-qgrade.sel-repetir   { background:rgba(217,79,61,0.2); border-color:var(--coral-light); }
+
+  /* Input comentario */
+  .comment-row { display:flex; gap:8px; }
+  .comment-input {
+    flex:1; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:10px 14px; color:var(--text);
+    font-family:'Nunito Sans',sans-serif; font-size:13px;
+    outline:none; transition:border-color 0.2s;
+  }
+  .comment-input:focus { border-color:var(--green); }
+  .btn-send-comment {
+    background:var(--green); border:none; border-radius:var(--radius-sm);
+    padding:10px 14px; color:#fff; font-size:16px; cursor:pointer;
+    transition:all 0.2s;
+  }
+  .btn-send-comment:active { transform:scale(0.92); }
+  .btn-del-sub {
+    background:none; border:none; color:var(--muted); font-size:16px;
+    cursor:pointer; padding:4px; border-radius:6px; transition:all 0.2s;
+  }
+  .btn-del-sub:hover { color:var(--coral-light); background:rgba(217,79,61,0.1); }
+
+  /* Lightbox foto */
+  .lightbox {
+    position:fixed; inset:0; z-index:100;
+    background:rgba(0,0,0,0.92);
+    display:none; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .lightbox.open { display:flex; }
+  .lightbox img { max-width:100%; max-height:90vh; border-radius:12px; }
+  .lightbox-close {
+    position:fixed; top:20px; right:20px;
+    background:rgba(255,255,255,0.15); border:none; border-radius:50%;
+    width:40px; height:40px; color:#fff; font-size:20px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* EMPTY */
+  .empty-state { text-align:center; padding:48px 20px; display:none; }
+  .empty-state.show { display:block; }
+  .empty-icon { font-size:48px; margin-bottom:14px; }
+  .empty-state h3 { font-family:'Nunito',sans-serif; font-size:17px; font-weight:800; margin-bottom:6px; }
+  .empty-state p { font-size:13px; color:var(--muted); }
+
+  /* LOADING / TOAST */
+  .loading-overlay {
+    position:fixed; inset:0; z-index:200; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    transition:opacity 0.4s;
+  }
+  .loading-overlay.hidden { opacity:0; pointer-events:none; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .loading-overlay p { color:var(--muted); font-size:14px; }
+
+  .toast {
+    position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:12px; padding:12px 20px;
+    font-family:'Nunito',sans-serif; font-size:14px; font-weight:700;
+    white-space:nowrap; z-index:300; opacity:0; transition:all 0.3s; pointer-events:none;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.success { border-color:rgba(45,158,90,0.4); color:var(--green-light); }
+  .toast.error   { border-color:rgba(217,79,61,0.4); color:var(--coral-light); }
+
+  /* UPLOAD PROGRESS */
+  .upload-progress { display:none; margin-top:12px; }
+  .upload-progress.show { display:block; }
+  .progress-track { height:6px; background:var(--bg3); border-radius:99px; overflow:hidden; margin-bottom:6px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--green), var(--blue)); border-radius:99px; width:0%; transition:width 0.3s; }
+  .progress-label { font-size:11px; color:var(--muted); text-align:center; }
+
+  /* CONFIRM DELETE */
+  .confirm-overlay {
+    position:fixed; inset:0; z-index:150;
+    background:rgba(10,16,24,0.88); backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; opacity:0; pointer-events:none; transition:opacity 0.2s;
+  }
+  .confirm-overlay.open { opacity:1; pointer-events:all; }
+  .confirm-box {
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:24px 20px;
+    width:100%; max-width:320px; text-align:center;
+    transform:scale(0.9); transition:transform 0.2s;
+  }
+  .confirm-overlay.open .confirm-box { transform:scale(1); }
+  .confirm-box p { font-family:'Nunito',sans-serif; font-size:15px; font-weight:700; margin-bottom:5px; }
+  .confirm-box span { font-size:12px; color:var(--muted); }
+  .confirm-actions { display:flex; gap:10px; margin-top:18px; }
+  .btn-conf-cancel {
+    flex:1; padding:12px; background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); color:var(--muted);
+    font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer;
+  }
+  .btn-conf-del {
+    flex:1; padding:12px; background:rgba(217,79,61,0.2);
+    border:1.5px solid rgba(217,79,61,0.4); border-radius:var(--radius-sm);
+    color:var(--coral-light); font-family:'Nunito',sans-serif; font-size:14px; font-weight:800; cursor:pointer;
+  }
+
+  /* ANIMACIONES */
+  .container { animation:pageFadeIn 0.4s ease both; }
+  @keyframes pageFadeIn { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+  .page-header { animation:slideFromTop 0.4s cubic-bezier(0.34,1.2,0.64,1) 0.05s both; }
+  @keyframes slideFromTop { from{opacity:0;transform:translateY(-16px);} to{opacity:1;transform:translateY(0);} }
+  .submission-card { transition:box-shadow 0.2s ease, transform 0.2s ease; }
+  .submission-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.2); }
+</style>
+</head>
+<body>
+
+<div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p>Cargando...</p></div>
+<div class="toast" id="toast"></div>
+
+<!-- LIGHTBOX FOTO -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="Entrega">
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div style="font-size:36px;margin-bottom:12px;">🗑️</div>
+    <p>¿Eliminar esta entrega?</p>
+    <span>Se borrarán la foto y el audio permanentemente.</span>
+    <div class="confirm-actions">
+      <button class="btn-conf-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-conf-del" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="container">
+  <div class="page-header">
+    <a class="back-btn" href="index.html">←</a>
+    <div class="header-text">
+      <h1 id="pageTitle">📤 Entregas</h1>
+      <p id="pageSubtitle">CEBG Barrigón</p>
+    </div>
+  </div>
+
+  <div id="rolePill"></div>
+
+  <!-- ===== VISTA ESTUDIANTE ===== -->
+  <div id="vistaEstudiante" style="display:none">
+    <div class="field">
+      <label>Selecciona la tarea</label>
+      <select id="selTareaEst" onchange="onTareaEstChange()">
+        <option value="">-- Elige una tarea --</option>
+      </select>
+    </div>
+
+    <div class="entrega-box" id="entregaBox">
+      <!-- Estado actual -->
+      <div class="entrega-status status-pending" id="entregaStatus">
+        ⏳ Pendiente de entrega
+      </div>
+
+      <!-- Adjuntar foto -->
+      <div class="attach-section">
+        <div class="attach-title">📷 Foto del trabajo</div>
+        <div class="attach-buttons">
+          <button class="btn-attach" id="btnFotoCamara" onclick="document.getElementById('inputCamara').click()">
+            <span class="attach-icon">📷</span>
+            <span>Cámara</span>
+            <input type="file" id="inputCamara" accept="image/*" capture="environment" style="display:none" onchange="onFotoSelected(event)">
+          </button>
+          <button class="btn-attach" id="btnFotoGaleria" onclick="document.getElementById('inputGaleria').click()">
+            <span class="attach-icon">🖼️</span>
+            <span>Galería</span>
+            <input type="file" id="inputGaleria" accept="image/*" style="display:none" onchange="onFotoSelected(event)">
+          </button>
+        </div>
+        <img class="photo-preview" id="photoPreview" src="" alt="Vista previa">
+      </div>
+
+      <!-- Grabar audio -->
+      <div class="attach-section">
+        <div class="attach-title">🎤 Audio (lectura o respuesta)</div>
+        <div class="attach-buttons">
+          <button class="btn-attach" id="btnAudio" onclick="toggleRecording()">
+            <span class="attach-icon" id="audioIcon">🎤</span>
+            <span id="audioLabel">Grabar audio</span>
+          </button>
+        </div>
+        <div class="audio-recorder" id="audioRecorder">
+          <button class="btn-record" id="btnRecord" onclick="toggleRecording()">⏹</button>
+          <div class="record-info">
+            <div class="record-time" id="recordTime">0:00</div>
+            <div class="record-label" id="recordLabel">Grabando...</div>
+          </div>
+        </div>
+        <audio class="audio-playback" id="audioPlayback" controls></audio>
+      </div>
+
+      <!-- Progreso subida -->
+      <div class="upload-progress" id="uploadProgress">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-label" id="progressLabel">Subiendo...</div>
+      </div>
+
+      <!-- Feedback del docente -->
+      <div class="docente-feedback" id="docenteFeedback">
+        <div class="feedback-label">💬 Comentario del docente</div>
+        <div class="feedback-text" id="feedbackText"></div>
+      </div>
+
+      <button class="btn-submit" id="btnSubmit" onclick="submitEntrega()">
+        📤 Entregar
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== VISTA DOCENTE ===== -->
+  <div id="vistaDocente" style="display:none">
+    <div class="field">
+      <label>Filtrar por grado</label>
+      <div class="docente-filters" id="gradeFilters"></div>
+    </div>
+    <div class="field">
+      <label>Tarea</label>
+      <select id="selTareaDoc" onchange="loadSubmissions()">
+        <option value="">-- Selecciona tarea --</option>
+      </select>
+    </div>
+    <div id="submissionList"></div>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">📭</div>
+      <h3 id="emptyTitle">Sin entregas aún</h3>
+      <p id="emptyMsg">Las entregas de los estudiantes aparecerán aquí</p>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, deleteDoc, getDocs, doc, query,
+           where, updateDoc, getDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJZFP_BZa5YR4GqDqYi938I15FxkUFsjE",
+    authDomain: "barrigon-classroom.firebaseapp.com",
+    projectId: "barrigon-classroom",
+    storageBucket: "barrigon-classroom.appspot.com",
+    messagingSenderId: "987121913715",
+    appId: "1:987121913715:web:4d61a24e8facf6766bff06"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window._db=db;
+  window._collection=collection; window._addDoc=addDoc; window._deleteDoc=deleteDoc;
+  window._getDocs=getDocs; window._doc=doc; window._query=query; window._where=where;
+  window._updateDoc=updateDoc; window._getDoc=getDoc;
+
+  window.addEventListener('load', initPage);
+</script>
+
+<script>
+  let SESSION = null;
+  let allTasks = [];
+  let currentTaskId = null;
+  let currentEntregaId = null;
+  let photoFile = null;
+  let audioBlob = null;
+  let mediaRecorder = null;
+  let recordingInterval = null;
+  let recordingSeconds = 0;
+  let isRecording = false;
+  let audioChunks = [];
+  let deleteTargetId = null;
+  let deleteTargetSub = null;
+  let currentGradeFilter = 'all';
+
+  // ===== CLOUDINARY CONFIG =====
+  const CLOUDINARY_CLOUD = 'ddl24vrzc';
+  const CLOUDINARY_PRESET = 'barrigon_entregas';
+  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/upload`;
+
+  async function uploadToCloudinary(file, folder) {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', folder);
+    const res = await fetch(CLOUDINARY_URL, { method:'POST', body:fd });
+    if (!res.ok) throw new Error('Cloudinary upload failed');
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  async function uploadAudioToCloudinary(blob, folder) {
+    const fd = new FormData();
+    fd.append('file', blob, 'audio.webm');
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', folder);
+    fd.append('resource_type', 'raw');
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/raw/upload`;
+    const res = await fetch(url, { method:'POST', body:fd });
+    if (!res.ok) throw new Error('Cloudinary audio upload failed');
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  const GRADE_LABELS = {
+    all:'Todos', prek:'PreK', kinder:'Kinder',
+    '1ro':'1°','2do':'2°','3ro':'3°','4to':'4°','5to':'5°','6to':'6°'
+  };
+
+  // ===== INIT =====
+  function initPage() {
+    try { SESSION = JSON.parse(sessionStorage.getItem('bc_session')||'null'); } catch(e){}
+    if (!SESSION) {
+      const p = new URLSearchParams(location.search);
+      SESSION = { role:p.get('rol')||'estudiante', name:p.get('name')||'Usuario',
+                  grade:p.get('grade')||null, uid:p.get('uid')||'demo', grades:[] };
+    }
+
+    document.getElementById('pageSubtitle').textContent = SESSION.name;
+    const r = SESSION.role;
+    const isDocente = r === 'docente' || r === 'director';
+
+    document.getElementById('rolePill').innerHTML = isDocente
+      ? `<div class="role-pill pill-docente">${r==='director'?'👨‍💼 Director':'👩‍🏫 Docente'}</div>`
+      : `<div class="role-pill pill-estudiante">🎒 ${SESSION.name}</div>`;
+
+    if (isDocente) {
+      document.getElementById('vistaDocente').style.display = 'block';
+      buildGradeFilters();
+      loadTasksDocente();
+    } else {
+      document.getElementById('vistaEstudiante').style.display = 'block';
+      loadTasksEstudiante();
+    }
+  }
+
+  // ===== CARGAR TAREAS =====
+  async function loadTasksEstudiante() {
+    try {
+      const grade = SESSION.grade;
+      const [snap1, snap2] = await Promise.all([
+        window._getDocs(window._query(window._collection(window._db,'tasks'), window._where('grade','==',grade))),
+        window._getDocs(window._query(window._collection(window._db,'tasks'), window._where('grade','==','all')))
+      ]);
+      allTasks = [...snap1.docs, ...snap2.docs].map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
+      const sel = document.getElementById('selTareaEst');
+      sel.innerHTML = '<option value="">-- Elige una tarea --</option>' +
+        allTasks.map(t=>`<option value="${t.id}">${escHtml(t.title||'Tarea')} ${t.subject?'· '+t.subject:''}</option>`).join('');
+    } catch(e) { showToast('Error al cargar tareas.','error'); }
+    finally { document.getElementById('loadingOverlay').classList.add('hidden'); }
+  }
+
+  async function loadTasksDocente() {
+    try {
+      const snap = await window._getDocs(window._collection(window._db,'tasks'));
+      allTasks = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
+      filterAndPopulateTasks();
+    } catch(e) { showToast('Error al cargar tareas.','error'); }
+    finally { document.getElementById('loadingOverlay').classList.add('hidden'); }
+  }
+
+  function buildGradeFilters() {
+    const grades = SESSION.role === 'director'
+      ? ['all','prek','kinder','1ro','2do','3ro','4to','5to','6to']
+      : ['all', ...(SESSION.grades||[])];
+    document.getElementById('gradeFilters').innerHTML = grades.map((g,i) =>
+      `<div class="grade-chip ${i===0?'sel':''}" onclick="setGradeFilter(this,'${g}')">${GRADE_LABELS[g]||g}</div>`
+    ).join('');
+  }
+
+  function setGradeFilter(el, grade) {
+    document.querySelectorAll('.grade-chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    currentGradeFilter = grade;
+    filterAndPopulateTasks();
+  }
+
+  function filterAndPopulateTasks() {
+    const filtered = currentGradeFilter === 'all'
+      ? allTasks
+      : allTasks.filter(t => t.grade === currentGradeFilter || t.grade === 'all');
+    const sel = document.getElementById('selTareaDoc');
+    sel.innerHTML = '<option value="">-- Selecciona tarea --</option>' +
+      filtered.map(t=>`<option value="${t.id}">${escHtml(t.title||'Tarea')} · ${GRADE_LABELS[t.grade]||t.grade||'—'}</option>`).join('');
+    document.getElementById('submissionList').innerHTML = '';
+    document.getElementById('emptyState').classList.add('show');
+  }
+
+  // ===== ESTUDIANTE: seleccionar tarea =====
+  async function onTareaEstChange() {
+    const tid = document.getElementById('selTareaEst').value;
+    currentTaskId = tid;
+    photoFile = null; audioBlob = null;
+    resetAttachUI();
+
+    if (!tid) { document.getElementById('entregaBox').classList.remove('show'); return; }
+    document.getElementById('entregaBox').classList.add('show');
+    document.getElementById('btnSubmit').disabled = false;
+    document.getElementById('btnSubmit').textContent = '📤 Entregar';
+
+    // Verificar si ya entregó
+    try {
+      const snap = await window._getDocs(window._query(
+        window._collection(window._db,'submissions'),
+        window._where('taskId','==',tid),
+        window._where('studentId','==',SESSION.uid)
+      ));
+      if (!snap.empty) {
+        const sub = snap.docs[0].data();
+        currentEntregaId = snap.docs[0].id;
+        showSubmittedStatus(sub);
+      } else {
+        currentEntregaId = null;
+        document.getElementById('entregaStatus').className = 'entrega-status status-pending';
+        document.getElementById('entregaStatus').textContent = '⏳ Pendiente de entrega';
+        document.getElementById('docenteFeedback').classList.remove('show');
+        document.getElementById('btnSubmit').textContent = '📤 Entregar';
+      }
+    } catch(e) {}
+  }
+
+  function showSubmittedStatus(sub) {
+    const statusEl = document.getElementById('entregaStatus');
+    const grade = sub.grade || 'submitted';
+    if (grade === 'excelente') {
+      statusEl.className = 'entrega-status status-reviewed';
+      statusEl.textContent = '⭐ Excelente — revisado por el docente';
+    } else if (grade === 'revisado') {
+      statusEl.className = 'entrega-status status-reviewed';
+      statusEl.textContent = '✅ Revisado por el docente';
+    } else if (grade === 'repetir') {
+      statusEl.className = 'entrega-status status-pending';
+      statusEl.textContent = '🔁 El docente pide que repitas';
+    } else {
+      statusEl.className = 'entrega-status status-submitted';
+      statusEl.textContent = '✅ Entregado — esperando revisión';
+    }
+
+    if (sub.comment) {
+      document.getElementById('feedbackText').textContent = sub.comment;
+      document.getElementById('docenteFeedback').classList.add('show');
+    }
+
+    if (sub.photoUrl) {
+      document.getElementById('photoPreview').src = sub.photoUrl;
+      document.getElementById('photoPreview').classList.add('show');
+    }
+    if (sub.audioUrl) {
+      document.getElementById('audioPlayback').src = sub.audioUrl;
+      document.getElementById('audioPlayback').classList.add('show');
+    }
+
+    document.getElementById('btnSubmit').textContent = '🔄 Actualizar entrega';
+  }
+
+  // ===== FOTO =====
+  function onFotoSelected(e) {
+    const file = e.target.files[0]; if (!file) return;
+    photoFile = file;
+    const url = URL.createObjectURL(file);
+    document.getElementById('photoPreview').src = url;
+    document.getElementById('photoPreview').classList.add('show');
+    document.getElementById('btnFotoCamara').classList.add('has-file');
+    document.getElementById('btnFotoGaleria').classList.add('has-file');
+    showToast('📷 Foto lista','success');
+  }
+
+  // ===== AUDIO =====
+  async function toggleRecording() {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
+    }
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const url = URL.createObjectURL(audioBlob);
+        document.getElementById('audioPlayback').src = url;
+        document.getElementById('audioPlayback').classList.add('show');
+        document.getElementById('btnAudio').classList.add('has-file');
+        document.getElementById('audioIcon').textContent = '✅';
+        document.getElementById('audioLabel').textContent = 'Audio listo';
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      recordingSeconds = 0;
+
+      document.getElementById('audioRecorder').classList.add('show');
+      document.getElementById('btnRecord').classList.add('recording');
+      document.getElementById('recordLabel').textContent = 'Grabando... (toca para detener)';
+      document.getElementById('btnAudio').classList.add('has-file');
+      document.getElementById('audioIcon').textContent = '⏹';
+      document.getElementById('audioLabel').textContent = 'Detener';
+
+      recordingInterval = setInterval(() => {
+        recordingSeconds++;
+        const m = Math.floor(recordingSeconds/60);
+        const s = recordingSeconds % 60;
+        document.getElementById('recordTime').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        // Max 3 minutos
+        if (recordingSeconds >= 180) stopRecording();
+      }, 1000);
+    } catch(e) {
+      showToast('No se pudo acceder al micrófono.','error');
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      isRecording = false;
+      clearInterval(recordingInterval);
+      document.getElementById('btnRecord').classList.remove('recording');
+      document.getElementById('recordLabel').textContent = 'Grabación lista';
+    }
+  }
+
+  function resetAttachUI() {
+    document.getElementById('photoPreview').classList.remove('show');
+    document.getElementById('photoPreview').src = '';
+    document.getElementById('audioRecorder').classList.remove('show');
+    document.getElementById('audioPlayback').classList.remove('show');
+    document.getElementById('audioPlayback').src = '';
+    document.getElementById('btnFotoCamara').classList.remove('has-file');
+    document.getElementById('btnFotoGaleria').classList.remove('has-file');
+    document.getElementById('btnAudio').classList.remove('has-file');
+    document.getElementById('audioIcon').textContent = '🎤';
+    document.getElementById('audioLabel').textContent = 'Grabar audio';
+    document.getElementById('uploadProgress').classList.remove('show');
+    document.getElementById('docenteFeedback').classList.remove('show');
+    if (isRecording) stopRecording();
+  }
+
+  // ===== ENTREGAR =====
+  async function submitEntrega() {
+    if (!currentTaskId) return;
+    if (!photoFile && !audioBlob) {
+      showToast('Adjunta al menos una foto o audio.','error'); return;
+    }
+
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true; btn.textContent = 'Subiendo...';
+    document.getElementById('uploadProgress').classList.add('show');
+
+    try {
+      let photoUrl = null, audioUrl = null;
+      const folder = `barrigon/${SESSION.grade}/${currentTaskId}/${SESSION.uid}`;
+
+      // Subir foto a Cloudinary
+      if (photoFile) {
+        updateProgress(20, 'Subiendo foto...');
+        photoUrl = await uploadToCloudinary(photoFile, folder);
+        updateProgress(60, 'Foto subida ✓');
+      }
+
+      // Subir audio a Cloudinary
+      if (audioBlob) {
+        updateProgress(70, 'Subiendo audio...');
+        audioUrl = await uploadAudioToCloudinary(audioBlob, folder);
+        updateProgress(90, 'Audio subido ✓');
+      }
+
+      const data = {
+        taskId: currentTaskId,
+        studentId: SESSION.uid,
+        studentName: SESSION.name,
+        grade: SESSION.grade,
+        photoUrl, audioUrl,
+        status: 'submitted',
+        submittedAt: new Date().toISOString()
+      };
+
+      if (currentEntregaId) {
+        await window._updateDoc(window._doc(window._db,'submissions',currentEntregaId), data);
+      } else {
+        const ref = await window._addDoc(window._collection(window._db,'submissions'), data);
+        currentEntregaId = ref.id;
+      }
+
+      updateProgress(100, '¡Entregado!');
+      setTimeout(() => {
+        document.getElementById('uploadProgress').classList.remove('show');
+        document.getElementById('entregaStatus').className = 'entrega-status status-submitted';
+        document.getElementById('entregaStatus').textContent = '✅ Entregado — esperando revisión';
+        btn.textContent = '🔄 Actualizar entrega';
+        btn.disabled = false;
+        showToast('✅ Entrega enviada','success');
+      }, 800);
+
+    } catch(e) {
+      console.error(e);
+      showToast('Error al entregar. Verifica conexión.','error');
+      btn.disabled = false; btn.textContent = '📤 Entregar';
+      document.getElementById('uploadProgress').classList.remove('show');
+    }
+  }
+
+  function updateProgress(pct, label) {
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = label;
+  }
+
+  // ===== DOCENTE: cargar entregas =====
+  async function loadSubmissions() {
+    const tid = document.getElementById('selTareaDoc').value;
+    if (!tid) return;
+    const list = document.getElementById('submissionList');
+    const empty = document.getElementById('emptyState');
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:12px 0">Cargando entregas...</div>';
+
+    try {
+      const snap = await window._getDocs(window._query(
+        window._collection(window._db,'submissions'),
+        window._where('taskId','==',tid)
+      ));
+      const subs = snap.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(b.submittedAt||'').localeCompare(a.submittedAt||''));
+
+      if (subs.length === 0) {
+        list.innerHTML = '';
+        empty.classList.add('show');
+        document.getElementById('emptyTitle').textContent = 'Sin entregas aún';
+        document.getElementById('emptyMsg').textContent = 'Los estudiantes no han entregado esta tarea todavía';
+        return;
+      }
+      empty.classList.remove('show');
+      list.innerHTML = subs.map(s => renderSubmission(s)).join('');
+    } catch(e) {
+      list.innerHTML = '';
+      showToast('Error al cargar entregas.','error');
+    }
+  }
+
+  function renderSubmission(s) {
+    const grade = s.grade || 'submitted';
+    const badgeClass = grade==='excelente' ? 'badge-excellent'
+                     : grade==='revisado'  ? 'badge-reviewed'
+                     : grade==='repetir'   ? 'badge-repeat' : 'badge-pending';
+    const badgeText  = grade==='excelente' ? '⭐ Excelente'
+                     : grade==='revisado'  ? '✅ Revisado'
+                     : grade==='repetir'   ? '🔁 Repetir' : '⏳ Pendiente';
+    const timeStr = s.submittedAt ? formatTime(s.submittedAt) : '';
+    const initial = (s.studentName||'?').charAt(0).toUpperCase();
+
+    const photoHtml = s.photoUrl
+      ? `<img class="sub-photo" src="${escHtml(s.photoUrl)}" alt="Foto" onclick="openLightbox('${escHtml(s.photoUrl)}')">`
+      : '';
+    const audioHtml = s.audioUrl
+      ? `<div class="sub-audio-btn" onclick="playAudio('${escHtml(s.audioUrl)}','${s.id}')">
+           <span style="font-size:20px">▶️</span> Escuchar audio
+         </div>`
+      : '';
+
+    const selRev = grade==='revisado'  ? 'sel-revisado'  : '';
+    const selExc = grade==='excelente' ? 'sel-excelente' : '';
+    const selRep = grade==='repetir'   ? 'sel-repetir'   : '';
+
+    return `
+    <div class="submission-card" id="sub-${s.id}">
+      <div class="sub-header">
+        <div class="sub-avatar">${initial}</div>
+        <div class="sub-info">
+          <div class="sub-name">${escHtml(s.studentName||'Estudiante')}</div>
+          <div class="sub-meta">${GRADE_LABELS[s.grade]||s.grade||'—'} · ${timeStr}</div>
+        </div>
+        <span class="sub-status-badge ${badgeClass}">${badgeText}</span>
+        <button class="btn-del-sub" onclick="askDeleteSub('${s.id}',${JSON.stringify(s).replace(/"/g,'&quot;')})" title="Eliminar">🗑️</button>
+      </div>
+      ${(s.photoUrl || s.audioUrl) ? `<div class="sub-attachments">${photoHtml}${audioHtml}</div>` : ''}
+      <div class="quick-grade">
+        <button class="btn-qgrade ${selRev}" onclick="gradeSubmission('${s.id}','revisado',this)">✅<span>Revisado</span></button>
+        <button class="btn-qgrade ${selExc}" onclick="gradeSubmission('${s.id}','excelente',this)">⭐<span>Excelente</span></button>
+        <button class="btn-qgrade ${selRep}" onclick="gradeSubmission('${s.id}','repetir',this)">🔁<span>Repetir</span></button>
+      </div>
+      <div class="comment-row">
+        <input class="comment-input" id="comment-${s.id}" placeholder="Comentario para el estudiante..." value="${escHtml(s.comment||'')}">
+        <button class="btn-send-comment" onclick="sendComment('${s.id}')">💬</button>
+      </div>
+    </div>`;
+  }
+
+  // ===== CALIFICAR =====
+  async function gradeSubmission(subId, grade, btn) {
+    try {
+      await window._updateDoc(window._doc(window._db,'submissions',subId), { grade });
+      // Actualizar UI
+      const card = document.getElementById('sub-'+subId);
+      if (card) {
+        card.querySelectorAll('.btn-qgrade').forEach(b => b.classList.remove('sel-revisado','sel-excelente','sel-repetir'));
+        btn.classList.add('sel-'+grade);
+        const badge = card.querySelector('.sub-status-badge');
+        if (badge) {
+          badge.className = `sub-status-badge ${grade==='excelente'?'badge-excellent':grade==='revisado'?'badge-reviewed':grade==='repetir'?'badge-repeat':'badge-pending'}`;
+          badge.textContent = grade==='excelente'?'⭐ Excelente':grade==='revisado'?'✅ Revisado':grade==='repetir'?'🔁 Repetir':'⏳ Pendiente';
+        }
+      }
+      showToast('Calificación guardada','success');
+    } catch(e) { showToast('Error al calificar.','error'); }
+  }
+
+  async function sendComment(subId) {
+    const comment = document.getElementById('comment-'+subId).value.trim();
+    try {
+      await window._updateDoc(window._doc(window._db,'submissions',subId), { comment });
+      showToast('💬 Comentario enviado','success');
+    } catch(e) { showToast('Error al enviar comentario.','error'); }
+  }
+
+  // ===== ELIMINAR =====
+  function askDeleteSub(id, sub) {
+    deleteTargetId = id;
+    deleteTargetSub = sub;
+    document.getElementById('confirmOverlay').classList.add('open');
+  }
+  function closeConfirm() {
+    deleteTargetId = null; deleteTargetSub = null;
+    document.getElementById('confirmOverlay').classList.remove('open');
+  }
+  async function confirmDelete() {
+    if (!deleteTargetId) return;
+    closeConfirm();
+    try {
+      // Eliminar documento de Firestore
+      // (Los archivos en Cloudinary se pueden eliminar desde el dashboard de Cloudinary)
+      await window._deleteDoc(window._doc(window._db,'submissions',deleteTargetId));
+      document.getElementById('sub-'+deleteTargetId)?.remove();
+      showToast('🗑️ Entrega eliminada','success');
+    } catch(e) { showToast('Error al eliminar.','error'); }
+  }
+
+  // ===== AUDIO PLAYBACK =====
+  function playAudio(url, id) {
+    const audio = new Audio(url);
+    audio.play().catch(() => showToast('No se pudo reproducir el audio.','error'));
+  }
+
+  // ===== LIGHTBOX =====
+  function openLightbox(url) {
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+  }
+
+  // ===== UTILS =====
+  function formatTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 1000);
+    if (diff < 60)   return 'Hace un momento';
+    if (diff < 3600) return 'Hace ' + Math.floor(diff/60) + ' min';
+    if (diff < 86400) return 'Hace ' + Math.floor(diff/3600) + 'h';
+    const dias = Math.floor(diff/86400);
+    if (dias === 1) return 'Ayer';
+    return d.getDate() + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()];
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent=msg; t.className='toast show '+type;
+    setTimeout(()=>t.className='toast',3200);
+  }
+</script>
+</body>
+</html>
