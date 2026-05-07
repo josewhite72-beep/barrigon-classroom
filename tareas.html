@@ -594,6 +594,7 @@
   const db   = getFirestore(app);
   const auth = getAuth(app);
 
+  // Asignar ANTES del load para garantizar disponibilidad
   window._db         = db;
   window._auth       = auth;
   window._collection = collection;
@@ -605,9 +606,12 @@
   window._where      = where;
   window._orderBy    = orderBy;
 
-  // La sesión de Auth persiste automáticamente entre páginas
-  // No hace falta hacer login de nuevo — Firebase recuerda el token
-  window.addEventListener('load', initPage);
+  // Iniciar app cuando DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPage);
+  } else {
+    initPage();
+  }
 </script>
 
 <script>
@@ -930,9 +934,14 @@
   }
   async function confirmDelete() {
     if (!deleteTargetId) return;
+    if (!window._deleteDoc || !window._doc || !window._db) {
+      showToast('Error: Firebase no inicializado. Recarga la página.', 'error');
+      return;
+    }
     closeConfirm();
     try {
-      await window._deleteDoc(window._doc(window._db, 'tasks', deleteTargetId));
+      const docRef = window._doc(window._db, 'tasks', deleteTargetId);
+      await window._deleteDoc(docRef);
       allTasks = allTasks.filter(t => t.id !== deleteTargetId);
       deleteTargetId = null;
       renderTasks();
