@@ -578,6 +578,13 @@
   window._db=db; window._collection=collection; window._addDoc=addDoc;
   window._deleteDoc=deleteDoc; window._getDocs=getDocs; window._doc=doc;
   window._query=query; window._where=where; window._orderBy=orderBy;
+
+  // ✅ Wrapper que usa deleteDoc y doc en el contexto correcto del módulo
+  window._deleteDocument = async function(colName, docId) {
+    const docRef = doc(db, colName, docId);
+    await deleteDoc(docRef);
+  };
+
   window.addEventListener('load', initPage);
 </script>
 
@@ -937,11 +944,13 @@
 
   async function confirmDelete() {
     if(!deleteTargetId) return;
+    const id = deleteTargetId;
+    const col = deleteTargetCol;
     closeConfirm();
     try {
-      await window._deleteDoc(window._doc(window._db, deleteTargetCol, deleteTargetId));
-      if (deleteTargetCol==='resources') allResources=allResources.filter(r=>r.id!==deleteTargetId);
-      else allGames=allGames.filter(g=>g.id!==deleteTargetId);
+      await window._deleteDocument(col, id);
+      if (col==='resources') allResources=allResources.filter(r=>r.id!==id);
+      else allGames=allGames.filter(g=>g.id!==id);
       deleteTargetId=null; deleteTargetCol=null;
       renderCurrent();
       showToast('🗑️ Eliminado','success');
