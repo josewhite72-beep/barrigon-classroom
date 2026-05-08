@@ -332,6 +332,16 @@
     color:var(--coral-light); font-family:'Nunito',sans-serif; font-size:14px; font-weight:800; cursor:pointer;
   }
 
+  /* BORRAR ADJUNTO */
+  .btn-clear-attach {
+    margin-top:8px; width:100%; padding:9px;
+    background:rgba(217,79,61,0.1); border:1.5px solid rgba(217,79,61,0.3);
+    border-radius:var(--radius-sm); color:var(--coral-light);
+    font-family:'Nunito',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-clear-attach:active { transform:scale(0.97); }
+
   /* ANIMACIONES */
   .container { animation:pageFadeIn 0.4s ease both; }
   @keyframes pageFadeIn { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
@@ -409,6 +419,7 @@
           </button>
         </div>
         <img class="photo-preview" id="photoPreview" src="" alt="Vista previa">
+        <button class="btn-clear-attach" id="btnBorrarFoto" onclick="borrarFoto()" style="display:none">✕ Borrar foto</button>
       </div>
 
       <!-- Grabar audio -->
@@ -428,6 +439,7 @@
           </div>
         </div>
         <audio class="audio-playback" id="audioPlayback" controls></audio>
+        <button class="btn-clear-attach" id="btnBorrarAudio" onclick="borrarAudio()" style="display:none">✕ Borrar audio</button>
       </div>
 
       <!-- Progreso subida -->
@@ -693,6 +705,33 @@
     document.getElementById('btnSubmit').textContent = '🔄 Actualizar entrega';
   }
 
+  // ===== BORRAR ADJUNTOS =====
+  function borrarFoto() {
+    photoFile = null;
+    document.getElementById('photoPreview').src = '';
+    document.getElementById('photoPreview').classList.remove('show');
+    document.getElementById('btnFotoCamara').classList.remove('has-file');
+    document.getElementById('btnFotoGaleria').classList.remove('has-file');
+    document.getElementById('btnBorrarFoto').style.display = 'none';
+    document.getElementById('inputCamara').value = '';
+    document.getElementById('inputGaleria').value = '';
+    showToast('Foto eliminada','success');
+  }
+
+  function borrarAudio() {
+    audioBlob = null;
+    if (isRecording) stopRecording();
+    document.getElementById('audioPlayback').src = '';
+    document.getElementById('audioPlayback').classList.remove('show');
+    document.getElementById('audioRecorder').classList.remove('show');
+    document.getElementById('btnAudio').classList.remove('has-file');
+    document.getElementById('audioIcon').textContent = '🎤';
+    document.getElementById('audioLabel').textContent = 'Grabar audio';
+    document.getElementById('btnBorrarAudio').style.display = 'none';
+    document.getElementById('recordTime').textContent = '0:00';
+    showToast('Audio eliminado','success');
+  }
+
   // ===== FOTO =====
   function onFotoSelected(e) {
     const file = e.target.files[0]; if (!file) return;
@@ -702,6 +741,7 @@
     document.getElementById('photoPreview').classList.add('show');
     document.getElementById('btnFotoCamara').classList.add('has-file');
     document.getElementById('btnFotoGaleria').classList.add('has-file');
+    document.getElementById('btnBorrarFoto').style.display = 'block';
     showToast('📷 Foto lista','success');
   }
 
@@ -728,6 +768,7 @@
         document.getElementById('btnAudio').classList.add('has-file');
         document.getElementById('audioIcon').textContent = '✅';
         document.getElementById('audioLabel').textContent = 'Audio listo';
+        document.getElementById('btnBorrarAudio').style.display = 'block';
         stream.getTracks().forEach(t => t.stop());
       };
       mediaRecorder.start();
