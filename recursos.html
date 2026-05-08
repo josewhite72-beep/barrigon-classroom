@@ -439,6 +439,20 @@
         <option value="6to">6° Grado</option>
       </select>
     </div>
+    <div class="field">
+      <label>Visibilidad</label>
+      <div style="display:flex;gap:10px;">
+        <button type="button" id="btnPublico" onclick="setVisibilidad('publico')"
+          style="flex:1;padding:11px;border-radius:var(--radius-sm);border:1.5px solid var(--amber);background:rgba(212,134,10,0.15);color:var(--amber-light);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          🌐 Público
+        </button>
+        <button type="button" id="btnPrivado" onclick="setVisibilidad('privado')"
+          style="flex:1;padding:11px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg3);color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          🔒 Solo yo
+        </button>
+      </div>
+      <p style="font-size:10px;color:var(--muted);margin-top:6px;">Solo yo: solo tú puedes verlo. Público: visible a estudiantes.</p>
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modalRecurso')">Cancelar</button>
       <button class="btn-save-amber" id="btnSaveRecurso" onclick="saveRecurso()">Guardar</button>
@@ -570,6 +584,8 @@
   let SESSION = null;
   let currentTab = 'recursos';
   let currentFilter = 'all';
+  let currentVisibilidad = 'publico'; // 'publico' | 'mios'
+  let rVisibilidad = 'publico'; // visibilidad del recurso en el modal
   let allResources = [];
   let allGames = [];
   let deleteTargetId = null;
@@ -605,16 +621,39 @@
   // ===== FILTROS =====
   function buildFilterChips() {
     const row = document.getElementById('filterRow');
+    const canEdit = SESSION.role === 'docente' || SESSION.role === 'director';
     const grades = ['all','prek','kinder','1ro','2do','3ro','4to','5to','6to'];
-    row.innerHTML = grades.map((g,i) =>
+
+    let chips = grades.map((g,i) =>
       `<div class="filter-chip ${i===0?'sel-amber':''}" onclick="setFilter(this,'${g}')">${GRADE_LABELS[g]}</div>`
     ).join('');
+
+    // Chip "Míos" solo para docentes
+    if (canEdit) {
+      chips += `<div class="filter-chip" id="chipMios" onclick="setFilterMios(this)" style="border-color:rgba(124,92,191,0.4);color:var(--purple-light)">🔒 Míos</div>`;
+    }
+
+    row.innerHTML = chips;
+  }
+
+  function setFilterMios(el) {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('sel-amber','sel-coral'));
+    el.style.background = 'rgba(124,92,191,0.2)';
+    el.style.borderColor = 'var(--purple-light)';
+    currentFilter = 'mios';
+    currentVisibilidad = 'mios';
+    renderCurrent();
   }
 
   function setFilter(el, grade) {
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('sel-amber','sel-coral'));
+    document.querySelectorAll('.filter-chip').forEach(c => {
+      c.classList.remove('sel-amber','sel-coral');
+      // Reset chip Míos si existía seleccionado
+      if (c.id === 'chipMios') { c.style.background = ''; c.style.borderColor = 'rgba(124,92,191,0.4)'; }
+    });
     el.classList.add(currentTab === 'recursos' ? 'sel-amber' : 'sel-coral');
     currentFilter = grade;
+    currentVisibilidad = 'publico';
     renderCurrent();
   }
 
@@ -676,7 +715,18 @@
 
   function filterByGrade(items) {
     const grade = SESSION.grade;
+
+    // Filtro "Míos" — solo recursos privados del docente actual
+    if (currentFilter === 'mios') {
+      return items.filter(i => i.private === true && i.createdBy === SESSION.uid);
+    }
+
     return items.filter(i => {
+      // Excluir recursos privados de otros docentes
+      if (i.private === true && i.createdBy !== SESSION.uid) return false;
+      // Excluir recursos privados propios cuando no está en filtro Míos
+      if (i.private === true) return false;
+
       if (currentFilter !== 'all') return i.grade === currentFilter || i.grade === 'all';
       // Para estudiantes: solo su grado + all
       if (SESSION.role === 'estudiante' || SESSION.role === 'padre') {
@@ -708,7 +758,7 @@
         onclick="trackOpen(event,'${r.id}')">
         <div class="res-icon ${TYPE_CLASS[r.type]||'icon-link'}">${TYPE_ICONS[r.type]||'🔗'}</div>
         <div class="res-info">
-          <div class="res-title">${escHtml(r.title||'Sin título')}</div>
+          <div class="res-title">${r.private ? '🔒 ' : ''}${escHtml(r.title||'Sin título')}</div>
           <div class="res-meta">${GRADE_LABELS[r.grade]||r.grade||'—'} · ${escHtml(r.uploadedBy||'')}</div>
         </div>
         ${canEdit ? `<div class="res-actions" onclick="event.preventDefault()">
@@ -757,6 +807,8 @@
       document.getElementById('errRecurso').classList.remove('show');
       document.getElementById('btnSaveRecurso').disabled = false;
       document.getElementById('btnSaveRecurso').textContent = 'Guardar';
+      rVisibilidad = 'publico';
+      setVisibilidad('publico');
       setTimeout(()=>document.getElementById('rTitle').focus(),350);
     } else {
       document.getElementById('gTitle').value = '';
@@ -780,6 +832,27 @@
     el.classList.add('selected');
   }
 
+  function setVisibilidad(v) {
+    rVisibilidad = v;
+    const btnPub = document.getElementById('btnPublico');
+    const btnPrv = document.getElementById('btnPrivado');
+    if (v === 'publico') {
+      btnPub.style.border = '1.5px solid var(--amber)';
+      btnPub.style.background = 'rgba(212,134,10,0.15)';
+      btnPub.style.color = 'var(--amber-light)';
+      btnPrv.style.border = '1.5px solid var(--border)';
+      btnPrv.style.background = 'var(--bg3)';
+      btnPrv.style.color = 'var(--muted)';
+    } else {
+      btnPrv.style.border = '1.5px solid var(--purple-light)';
+      btnPrv.style.background = 'rgba(124,92,191,0.15)';
+      btnPrv.style.color = 'var(--purple-light)';
+      btnPub.style.border = '1.5px solid var(--border)';
+      btnPub.style.background = 'var(--bg3)';
+      btnPub.style.color = 'var(--muted)';
+    }
+  }
+
   // ===== GUARDAR RECURSO =====
   async function saveRecurso() {
     const title = document.getElementById('rTitle').value.trim();
@@ -796,12 +869,19 @@
     btn.disabled=true; btn.textContent='Guardando...';
 
     try {
-      const data = { title, url, type, grade, uploadedBy: SESSION.name, createdBy: SESSION.uid, createdAt: new Date().toISOString() };
+      const isPrivate = rVisibilidad === 'privado';
+      const data = {
+        title, url, type, grade,
+        private: isPrivate,
+        uploadedBy: SESSION.name,
+        createdBy: SESSION.uid,
+        createdAt: new Date().toISOString()
+      };
       const ref = await window._addDoc(window._collection(window._db,'resources'), data);
       allResources.unshift({id:ref.id,...data});
       closeModal('modalRecurso');
       renderResources();
-      showToast('📁 Recurso agregado','success');
+      showToast(isPrivate ? '🔒 Recurso guardado (solo tú)' : '📁 Recurso agregado','success');
     } catch(e) {
       err.textContent='Error al guardar.'; err.classList.add('show');
       btn.disabled=false; btn.textContent='Guardar';
@@ -865,6 +945,22 @@
   function escHtml(s) {
     return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+
+  // ===== EXPONER AL DOM =====
+  window.setVisibilidad    = setVisibilidad;
+  window.setTab            = setTab;
+  window.setFilter         = setFilter;
+  window.setFilterMios     = setFilterMios;
+  window.openModal         = openModal;
+  window.closeModal        = closeModal;
+  window.closeModalOutside = closeModalOutside;
+  window.selectEmoji       = selectEmoji;
+  window.saveRecurso       = saveRecurso;
+  window.saveJuego         = saveJuego;
+  window.askDelete         = askDelete;
+  window.closeConfirm      = closeConfirm;
+  window.confirmDelete     = confirmDelete;
+  window.trackOpen         = trackOpen;
 </script>
 </body>
 </html>
