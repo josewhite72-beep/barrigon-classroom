@@ -786,11 +786,20 @@
 
     grid.innerHTML = filtered.map(g => `
       <a class="game-card" href="${escHtml(g.url||'#')}" target="_blank" rel="noopener">
-        ${canEdit ? `<button class="btn-game-del" onclick="event.preventDefault();askDelete('${g.id}','games','${escHtml(g.title||'')}')">🗑️</button>` : ''}
+        ${canEdit ? `<button class="btn-game-del" data-id="${g.id}" data-title="${escHtml(g.title||'')}">🗑️</button>` : ''}
         <span class="game-emoji">${g.emoji||'🎮'}</span>
         <div class="game-title">${escHtml(g.title||'Juego')}</div>
         <div class="game-grade">${GRADE_LABELS[g.grade]||g.grade||'Todos'}</div>
       </a>`).join('');
+
+    // Event listeners para eliminar juegos
+    grid.querySelectorAll('.btn-game-del').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        askDelete(btn.getAttribute('data-id'), 'games', btn.getAttribute('data-title'));
+      });
+    });
   }
 
   function trackOpen(e, id) {
