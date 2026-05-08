@@ -800,6 +800,7 @@
         <h2 id="dashName">Usuario</h2>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
+        <button class="logout-btn" id="btnCambiarPass" onclick="openChangePass()" title="Cambiar contraseña" style="display:none;background:rgba(255,255,255,0.08);font-size:16px;padding:8px 10px;">🔑</button>
         <button class="logout-btn" onclick="clearCache()" title="Limpiar caché" style="background:rgba(255,255,255,0.08);font-size:16px;padding:8px 10px;">🔄</button>
         <button class="logout-btn" onclick="logout()">Salir</button>
       </div>
@@ -819,10 +820,67 @@
   </div>
 </div>
 
+<!-- MODAL CAMBIAR CONTRASEÑA -->
+<div id="modalChangePass" style="
+  position:fixed;inset:0;z-index:200;
+  background:rgba(10,16,24,0.92);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="
+    background:#162030;border:1.5px solid rgba(255,255,255,0.08);
+    border-radius:20px;padding:28px 24px;width:100%;max-width:360px;">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;margin-bottom:6px;">🔑 Cambiar contraseña</h3>
+    <p style="font-size:12px;color:#7a9ab8;margin-bottom:20px;">Solo tú conocerás tu nueva contraseña.</p>
+
+    <div id="passError" style="
+      display:none;background:rgba(217,79,61,0.15);
+      border:1px solid rgba(217,79,61,0.3);border-radius:10px;
+      padding:10px 14px;font-size:12px;color:#ff7b6b;margin-bottom:14px;"></div>
+
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:10px;font-weight:700;color:#7a9ab8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Contraseña actual</label>
+      <input type="password" id="passActual" placeholder="Tu contraseña actual" style="
+        width:100%;background:#1e2d40;border:1.5px solid rgba(255,255,255,0.08);
+        border-radius:10px;padding:12px 14px;color:#f0f4f8;
+        font-family:'Nunito Sans',sans-serif;font-size:14px;outline:none;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:10px;font-weight:700;color:#7a9ab8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Nueva contraseña</label>
+      <input type="password" id="passNueva" placeholder="Mínimo 6 caracteres" style="
+        width:100%;background:#1e2d40;border:1.5px solid rgba(255,255,255,0.08);
+        border-radius:10px;padding:12px 14px;color:#f0f4f8;
+        font-family:'Nunito Sans',sans-serif;font-size:14px;outline:none;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:10px;font-weight:700;color:#7a9ab8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Confirmar nueva contraseña</label>
+      <input type="password" id="passConfirm" placeholder="Repite la nueva contraseña" style="
+        width:100%;background:#1e2d40;border:1.5px solid rgba(255,255,255,0.08);
+        border-radius:10px;padding:12px 14px;color:#f0f4f8;
+        font-family:'Nunito Sans',sans-serif;font-size:14px;outline:none;">
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeChangePass()" style="
+        flex:1;padding:13px;background:#1e2d40;
+        border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;
+        color:#7a9ab8;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        Cancelar
+      </button>
+      <button id="btnGuardarPass" onclick="saveNewPassword()" style="
+        flex:2;padding:13px;
+        background:linear-gradient(135deg,#2e7de9,#1a5bc4);
+        border:none;border-radius:10px;color:#fff;
+        font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+           updatePassword, reauthenticateWithCredential, EmailAuthProvider }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, getDoc, collection, query, where, getDocs }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -850,6 +908,9 @@
   window._query = query;
   window._where = where;
   window._getDocs = getDocs;
+  window._updatePassword = updatePassword;
+  window._reauthenticate = reauthenticateWithCredential;
+  window._EmailAuthProvider = EmailAuthProvider;
 
   onAuthStateChanged(auth, (user) => {
     document.getElementById('loadingOverlay').classList.add('hidden');
@@ -1066,6 +1127,11 @@
   function showDashboard(name, role, grade) {
     document.getElementById('dashWelcome').textContent = grade ? `Grado ${grade} ·` : '';
     document.getElementById('dashName').textContent = name;
+
+    // Mostrar botón cambiar contraseña solo para docentes y director
+    const btnPass = document.getElementById('btnCambiarPass');
+    if (btnPass) btnPass.style.display = (role === 'docente' || role === 'director') ? 'block' : 'none';
+
     const grid = document.getElementById('dashModules');
     grid.innerHTML = '';
     (MODULES[role] || []).forEach((mod, i) => {
@@ -1115,6 +1181,67 @@
     _sessionData = {};
     currentRole = ''; currentPin = ''; selectedGrade = '';
     goHome();
+  }
+
+  // ===== CAMBIAR CONTRASEÑA =====
+  function openChangePass() {
+    document.getElementById('passActual').value = '';
+    document.getElementById('passNueva').value = '';
+    document.getElementById('passConfirm').value = '';
+    document.getElementById('passError').style.display = 'none';
+    document.getElementById('btnGuardarPass').textContent = 'Guardar';
+    document.getElementById('btnGuardarPass').disabled = false;
+    document.getElementById('modalChangePass').style.display = 'flex';
+    setTimeout(() => document.getElementById('passActual').focus(), 200);
+  }
+
+  function closeChangePass() {
+    document.getElementById('modalChangePass').style.display = 'none';
+  }
+
+  async function saveNewPassword() {
+    const actual  = document.getElementById('passActual').value.trim();
+    const nueva   = document.getElementById('passNueva').value.trim();
+    const confirm = document.getElementById('passConfirm').value.trim();
+    const errEl   = document.getElementById('passError');
+    errEl.style.display = 'none';
+
+    if (!actual) { errEl.textContent = 'Escribe tu contraseña actual.'; errEl.style.display = 'block'; return; }
+    if (!nueva || nueva.length < 6) { errEl.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.'; errEl.style.display = 'block'; return; }
+    if (nueva !== confirm) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display = 'block'; return; }
+
+    const btn = document.getElementById('btnGuardarPass');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+
+    try {
+      const user = window._auth.currentUser;
+      if (!user) throw new Error('No hay sesión activa.');
+
+      // Re-autenticar primero
+      const credential = window._EmailAuthProvider.credential(user.email, actual);
+      await window._reauthenticate(user, credential);
+
+      // Actualizar contraseña
+      await window._updatePassword(user, nueva);
+
+      closeChangePass();
+      showDashToast('✅ Contraseña actualizada correctamente');
+    } catch(e) {
+      let msg = 'Error al cambiar contraseña.';
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'La contraseña actual es incorrecta.';
+      if (e.code === 'auth/weak-password') msg = 'La nueva contraseña es muy débil.';
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Guardar';
+    }
+  }
+
+  function showDashToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#162030;color:#2ecfa0;border:1px solid rgba(46,207,160,0.3);padding:12px 20px;border-radius:12px;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;z-index:999;white-space:nowrap;';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
   }
 </script>
 
