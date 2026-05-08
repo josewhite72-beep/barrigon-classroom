@@ -122,23 +122,24 @@
   /* TARJETAS JUEGO — más grandes y llamativas */
   .games-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
+  .game-card-wrap { position:relative; }
   .game-card {
     background:var(--card); border:1.5px solid var(--border);
     border-radius:var(--radius); padding:20px 14px;
     text-align:center; cursor:pointer; transition:all 0.2s;
     text-decoration:none; color:var(--text);
-    animation:slideIn 0.2s ease; position:relative; overflow:hidden;
+    animation:slideIn 0.2s ease; display:block;
   }
   .game-card:active { transform:scale(0.96); }
   .game-emoji { font-size:40px; margin-bottom:10px; display:block; }
   .game-title { font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; margin-bottom:3px; line-height:1.3; }
   .game-grade { font-size:10px; color:var(--muted); }
   .btn-game-del {
-    position:absolute; top:8px; right:8px;
-    background:none; border:none; color:var(--muted); font-size:14px;
-    cursor:pointer; padding:2px; border-radius:6px; transition:all 0.2s;
+    position:absolute; top:8px; right:8px; z-index:10;
+    background:rgba(10,16,24,0.6); border:none; color:var(--muted); font-size:14px;
+    cursor:pointer; padding:4px 6px; border-radius:6px; transition:all 0.2s;
   }
-  .btn-game-del:hover { color:var(--coral-light); }
+  .btn-game-del:hover { color:var(--coral-light); background:rgba(217,79,61,0.2); }
 
   /* EMPTY */
   .empty-state { text-align:center; padding:52px 20px; display:none; }
@@ -785,12 +786,14 @@
     empty.classList.remove('show');
 
     grid.innerHTML = filtered.map(g => `
-      <a class="game-card" href="${escHtml(g.url||'#')}" target="_blank" rel="noopener">
+      <div class="game-card-wrap">
+        <a class="game-card" href="${escHtml(g.url||'#')}" target="_blank" rel="noopener">
+          <span class="game-emoji">${g.emoji||'🎮'}</span>
+          <div class="game-title">${escHtml(g.title||'Juego')}</div>
+          <div class="game-grade">${GRADE_LABELS[g.grade]||g.grade||'Todos'}</div>
+        </a>
         ${canEdit ? `<button class="btn-game-del" data-id="${g.id}" data-title="${escHtml(g.title||'')}">🗑️</button>` : ''}
-        <span class="game-emoji">${g.emoji||'🎮'}</span>
-        <div class="game-title">${escHtml(g.title||'Juego')}</div>
-        <div class="game-grade">${GRADE_LABELS[g.grade]||g.grade||'Todos'}</div>
-      </a>`).join('');
+      </div>`).join('');
 
     // Event listeners para eliminar juegos
     grid.querySelectorAll('.btn-game-del').forEach(btn => {
