@@ -954,7 +954,7 @@
       deleteTargetId=null; deleteTargetCol=null;
       renderCurrent();
       showToast('🗑️ Eliminado','success');
-    } catch(e) { showToast('Error al eliminar.','error'); }
+    } catch(e) { showToast('❌ ' + (e.code || e.message || String(e)).slice(0,80), 'error'); }
   }
 
   // ===== UTILS =====
